@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2008
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaDemon", "LuaDemon\LuaDemon.vcxproj", "{FED1ECEB-83AB-4BDF-B1C4-A769E177387E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|x64 = Default|x64
+		Default|x86 = Default|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FED1ECEB-83AB-4BDF-B1C4-A769E177387E}.Default|x64.ActiveCfg = Default|x64
+		{FED1ECEB-83AB-4BDF-B1C4-A769E177387E}.Default|x64.Build.0 = Default|x64
+		{FED1ECEB-83AB-4BDF-B1C4-A769E177387E}.Default|x86.ActiveCfg = Default|Win32
+		{FED1ECEB-83AB-4BDF-B1C4-A769E177387E}.Default|x86.Build.0 = Default|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3C2D6DD6-44F5-4F65-BEC2-87A63F9397D1}
+	EndGlobalSection
+EndGlobal
