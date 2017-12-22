@@ -32,7 +32,7 @@ void CLuaEnvironment::FileSpy()
 
 		if (WaitForSingleObject(_dirHandle, INFINITE) == WAIT_OBJECT_0)
 		{
-			if (duration_cast<milliseconds>(system_clock::now() - _lastChange).count(); > 100)
+			if (duration_cast<milliseconds>(system_clock::now() - _lastChange).count() > 100)
 			{
 				PRINT_DEBUG("File change detected. Reloading.\n");
 				_FileChange = true;
