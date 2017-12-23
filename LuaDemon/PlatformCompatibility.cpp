@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-//#define DEBUG_HIDE // enable this to hide debug messages
+bool __nodebug = false;
 
 #ifdef _WIN32 // Win32 console
 
@@ -62,9 +62,8 @@ void PRINT_ERROR(const char * Message, ...)
 
 void PRINT_DEBUG(const char * Message, ...)
 {
-	#ifdef DEBUG_HIDE
-		return;
-	#endif
+	if (__nodebug) return;
+
 	va_list args;
 	va_start(args, Message);
 
@@ -128,18 +127,16 @@ void PRINT_ERROR(const char * Message, ...)
 
 void PRINT_DEBUG(const char * Message, ...)
 {
-	#ifdef DEBUG_HIDE
-		return;
-	#else
-		va_list args;
-		va_start(args, Message);
+	if (__nodebug) return;
 
-		printf("\x1B[%dm", PRINTCOLOR::DEBUG);
-		vprintf(Message, args);
-		printf(LUASANDBOX_DEFAULTCOLOR);
+	va_list args;
+	va_start(args, Message);
 
-		va_end(args);
-	#endif
+	printf("\x1B[%dm", PRINTCOLOR::DEBUG);
+	vprintf(Message, args);
+	printf(LUASANDBOX_DEFAULTCOLOR);
+
+	va_end(args);
 };
 
 #endif
@@ -175,3 +172,9 @@ bool EXISTS_FILE(const char * Path)
 	struct stat _buffer;
 	return (stat(Path, &_buffer) == 0);
 }
+
+//void PATH_NORMALIZE(std::string Path)
+//{
+//	for (size_t i = 0; i < CLuaEnvironment::_Directory.length(); i++)
+//		if (CLuaEnvironment::_Directory[i] == '\\') CLuaEnvironment::_Directory[i] = '/';
+//}

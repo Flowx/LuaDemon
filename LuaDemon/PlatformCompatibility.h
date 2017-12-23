@@ -1,9 +1,9 @@
 #pragma once
 // The following functions allow you to print color messages on any system, Windows and Linux
 
-#ifdef _WIN32 // Win32 console
+extern bool __nodebug;
 
-#define SLEEP(Time) Sleep(Time)
+#ifdef _WIN32 // Win32 console
 
 enum PRINTCOLOR
 {
@@ -16,8 +16,6 @@ enum PRINTCOLOR
 
 #else
 #include <unistd.h>
-
-//#define SLEEP(Time) usleep(Time * 1000);
 
 // Linux colors
 enum PRINTCOLOR

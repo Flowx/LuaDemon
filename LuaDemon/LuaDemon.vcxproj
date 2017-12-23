@@ -77,6 +77,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CLuaEnvironment.cpp" />
+    <ClCompile Include="CLuaStdLib.cpp" />
     <ClCompile Include="FileSpy.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlatformCompatibility.cpp" />
@@ -91,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLuaEnvironment.h" />
+    <ClInclude Include="CLuaStdLib.h" />
     <ClInclude Include="Lua\lauxlib.h" />
     <ClInclude Include="Lua\lua.h" />
     <ClInclude Include="Lua\lua.hpp" />

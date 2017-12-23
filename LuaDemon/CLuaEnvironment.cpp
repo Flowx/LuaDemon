@@ -1,5 +1,6 @@
 #include "PlatformCompatibility.h"
 #include "CLuaEnvironment.h"
+#include "CLuaStdLib.h"
 
 #pragma region Linker Restatements
 volatile int CLuaEnvironment::_Error;
@@ -16,19 +17,34 @@ void CLuaEnvironment::PushEnvTable()
 	lua_pushstring(_LuaState, _Directory.c_str()); // Root directory of the init.lua file
 	lua_setfield(_LuaState, -2, "ENVDIR");
 
-	#ifdef _WIN32
-	lua_pushstring(_LuaState, "WINDOWS"); // This just shows what system this was compiled to
+	#ifdef _WIN32 // This just shows what system this was compiled to
+	lua_pushstring(_LuaState, "WINDOWS"); 
 	#else
-	lua_pushstring(_LuaState, "LINUX"); // This just shows what system this was compiled to
+	lua_pushstring(_LuaState, "LINUX");
 	#endif	
 	lua_setfield(_LuaState, -2, "ENVSYS");
 
 	lua_setglobal(_LuaState, "_LUAENV");
 }
 
+void CLuaEnvironment::PushEnvFuncs()
+{
+	lua_newtable(_LuaState);
+
+	// includes another Lua file and runs it.
+	lua_pushcfunction(_LuaState, CLuaStdLib::Lua_include );
+	lua_setglobal(_LuaState, "include");
+
+	// forces the Lua environment to reload.
+	lua_pushcfunction(_LuaState, CLuaStdLib::Lua_forceReload); 
+	lua_setglobal(_LuaState, "forceReload");
+}
+
+
 void CLuaEnvironment::Cycle()
 {
 	PushEnvTable();
+	PushEnvFuncs();
 
 	_FileChange = true; // loading for the first time
 	for (;;)
@@ -38,35 +54,6 @@ void CLuaEnvironment::Cycle()
 			LoadLua();
 		}
 	}
-}
-
-void stackdump_g(lua_State* l)
-{
-	int i;
-	int top = lua_gettop(l);
-
-	printf("total in stack %d\n", top);
-
-	for (i = 1; i <= top; i++)
-	{
-		int t = lua_type(l, i);
-		switch (t) {
-		case LUA_TSTRING:  /* strings */
-			printf("string: '%s'\n", lua_tostring(l, i));
-			break;
-		case LUA_TBOOLEAN:  /* booleans */
-			printf("boolean %s\n", lua_toboolean(l, i) ? "true" : "false");
-			break;
-		case LUA_TNUMBER:  /* numbers */
-			printf("number: %g\n", lua_tonumber(l, i));
-			break;
-		default:  /* other values */
-			printf("%s\n", lua_typename(l, t));
-			break;
-		}
-		printf("  ");
-	}
-	printf("\n");
 }
 
 void CLuaEnvironment::LoadLua()

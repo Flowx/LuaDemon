@@ -9,10 +9,9 @@
 
 using namespace std;
 
-bool __nofilespy = false;
+static bool __nofilespy = false;
 int main(int argc, const char ** args)
 {
-
 #pragma region Command line argument parser
 	for (int i = 0; i < argc; i++)
 	{
@@ -22,6 +21,7 @@ int main(int argc, const char ** args)
 		{
 			PRINT_DEBUG("-dir <directory>\t = Sets the root directory for the Lua environment\n\tDirectory must be readable by the process.\n\tDirectory must end with /\n\tDirectory must contain an \'%s\'.\n", LUAENV_INDEXFILE);
 			PRINT_DEBUG("-nofilespy\t = Disables automatic reloading on Lua file changes.");
+			PRINT_DEBUG("-nodebug\t = Hides debug (cyan-colored) messages.");
 			return 0;
 		}
 
@@ -50,11 +50,13 @@ int main(int argc, const char ** args)
 			}
 
 			CLuaEnvironment::_Directory = args[i + 1];
-			PRINT_SUCCESS("nigger Acquired valid directory \"%s\"!\n", args[i + 1]);
-			i += 2;
+			PRINT_SUCCESS("Acquired valid directory \"%s\"!\n", args[i + 1]);
+			i++; // skip the argument for -dir
 		}
 		else if (targ == "-nofilespy")
 			__nofilespy = true;
+		else if (targ == "-nodebug")
+			__nodebug = true;
 	};
 #pragma endregion
 
@@ -62,6 +64,12 @@ int main(int argc, const char ** args)
 	{
 		PRINT_ERROR("ERROR: No directory! Use \'-dir <directory>\' in the command line.\n");
 		return 1;
+	}
+	else 
+	{
+		// only use forward slashes in directories
+		for (size_t i = 0; i < CLuaEnvironment::_Directory.length(); i++) 
+			if (CLuaEnvironment::_Directory[i] == '\\') CLuaEnvironment::_Directory[i] = '/';
 	}
 
 #pragma region Spawn Lua State

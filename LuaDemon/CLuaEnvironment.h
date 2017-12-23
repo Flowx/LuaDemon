@@ -20,6 +20,7 @@ public:
 	static void LoadFileSpy();
 
 	static void PushEnvTable();
+	static void PushEnvFuncs();
 
 	// Flag states
 	static volatile int  _Error;

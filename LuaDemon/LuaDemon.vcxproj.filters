@@ -36,6 +36,9 @@
     <ClCompile Include="PlatformCompatibility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CLuaStdLib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lua\lualib.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlatformCompatibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaStdLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
