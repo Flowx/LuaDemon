@@ -19,6 +19,9 @@ public:
 	static void LoadLua();
 	static void LoadFileSpy();
 
+	static void PollLibraries();
+	static void PushLibraries(); 
+
 	static void PushEnvTable();
 	static void PushEnvFuncs();
 

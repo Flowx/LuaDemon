@@ -29,8 +29,6 @@ void CLuaEnvironment::PushEnvTable()
 
 void CLuaEnvironment::PushEnvFuncs()
 {
-	lua_newtable(_LuaState);
-
 	// includes another Lua file and runs it.
 	lua_pushcfunction(_LuaState, CLuaStdLib::Lua_include );
 	lua_setglobal(_LuaState, "include");
@@ -40,19 +38,25 @@ void CLuaEnvironment::PushEnvFuncs()
 	lua_setglobal(_LuaState, "forceReload");
 }
 
-
 void CLuaEnvironment::Cycle()
 {
+	// This runs in the main thread.
 	PushEnvTable();
 	PushEnvFuncs();
+
+	PushLibraries();
 
 	_FileChange = true; // loading for the first time
 	for (;;)
 	{
-		if (_FileChange) { // this bool is a switch that needs to be reset after use
+		// TODO: implement configurable poll time
+		std::this_thread::sleep_for(std::chrono::microseconds(10)); // 100kHz is a plenty high poll rate
+		if (_FileChange) // this bool is a switch that needs to be reset after use
+		{
 			_FileChange = false;
 			LoadLua();
 		}
+		PollLibraries();
 	}
 }
 

@@ -3,10 +3,6 @@
 #include "PlatformCompatibility.h"
 #include "Lua/lua.hpp"
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4996) // disables warning about "unsafe" functions
-#endif
-
 using namespace std;
 
 static bool __nofilespy = false;

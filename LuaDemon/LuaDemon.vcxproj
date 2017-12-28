@@ -77,10 +77,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CLuaEnvironment.cpp" />
+    <ClCompile Include="CLuaLib.cpp" />
+    <ClCompile Include="CLuaNet.cpp" />
     <ClCompile Include="CLuaStdLib.cpp" />
     <ClCompile Include="FileSpy.cpp" />
+    <ClCompile Include="CLuaSerial_Win.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlatformCompatibility.cpp" />
+    <ClCompile Include="LibraryLinks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Lua_Test_Directory\includeme.lua" />
@@ -92,7 +96,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLuaEnvironment.h" />
+    <ClInclude Include="CLuaLib.h" />
+    <ClInclude Include="CLuaNet.h" />
     <ClInclude Include="CLuaStdLib.h" />
+    <ClInclude Include="CLuaSerial.h" />
     <ClInclude Include="Lua\lauxlib.h" />
     <ClInclude Include="Lua\lua.h" />
     <ClInclude Include="Lua\lua.hpp" />
