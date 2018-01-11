@@ -53,6 +53,7 @@ void CLuaEnvironment::Cycle()
 		std::this_thread::sleep_for(std::chrono::microseconds(10)); // 100kHz is a plenty high poll rate
 		if (_FileChange) // this bool is a switch that needs to be reset after use
 		{
+			LoadLibraries();
 			_FileChange = false;
 			LoadLua();
 		}

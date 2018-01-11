@@ -51,6 +51,9 @@
     <ClCompile Include="CLuaSerial_Win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CLuaSerial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lua\lualib.h">

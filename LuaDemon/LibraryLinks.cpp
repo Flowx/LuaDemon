@@ -12,3 +12,8 @@ void CLuaEnvironment::PushLibraries()
 {
 	CLuaSerial::PushFunctions();
 }
+
+void CLuaEnvironment::LoadLibraries()
+{
+	CLuaSerial::LoadFunctions();
+}

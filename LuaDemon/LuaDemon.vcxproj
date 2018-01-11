@@ -79,6 +79,7 @@
     <ClCompile Include="CLuaEnvironment.cpp" />
     <ClCompile Include="CLuaLib.cpp" />
     <ClCompile Include="CLuaNet.cpp" />
+    <ClCompile Include="CLuaSerial.cpp" />
     <ClCompile Include="CLuaStdLib.cpp" />
     <ClCompile Include="FileSpy.cpp" />
     <ClCompile Include="CLuaSerial_Win.cpp" />

@@ -14,7 +14,7 @@ void CLuaNet::PushFunctions()
 
 int CLuaNet::Lua_createSocket(lua_State * State)
 {
-	unsigned short _port = (short)lua_tointeger(State, 1);
+//	unsigned short _port = (short)lua_tointeger(State, 1);
 
 
 	return 0;

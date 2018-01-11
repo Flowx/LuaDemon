@@ -21,6 +21,7 @@ public:
 
 	static void PollLibraries();
 	static void PushLibraries(); 
+	static void LoadLibraries();
 
 	static void PushEnvTable();
 	static void PushEnvFuncs();
