@@ -16,11 +16,14 @@ public:
 	std::thread m_Thread;
 	std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
 	
+	int m_LuaReference;
+
 #if _WIN32 // a little messy but better than having everything twice
-	HANDLE m_Reference; // Windows Handle
+	HANDLE m_PortReference; // Windows Handle
 #elif
-	int m_Reference; // Linux File Descriptor
+	int m_PortReference; // Linux File Descriptor
 #endif
+
 	//void operator delete(void *) {} // works but good luck with the memory leak
 };
 
