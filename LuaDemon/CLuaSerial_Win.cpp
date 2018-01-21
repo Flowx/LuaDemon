@@ -101,12 +101,8 @@ int CLuaSerial::Lua_Send(lua_State * State)
 	if (_hSerial == INVALID_HANDLE_VALUE) return 0;
 
 	DWORD bytes_written;
+	
 	int a = WriteFile(_hSerial, &_databyte, 1, &bytes_written, NULL);
-	//if (a == 0)
-	//{
-	//	m_PortList.erase(_portname);
-	//	return 0;
-	//}
 
 	return 0;
 }
@@ -130,24 +126,27 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 		// function has to be last argument or this will create a wrong reference
 		_P->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
 
+		_P->m_Thread = std::thread(&(CLuaSerial::SerialRecv), _P);
+		_P->m_Thread.detach();
+
 		// push and call
-		lua_rawgeti(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
-		lua_pcall(State, 0, 0, 0);
+		//lua_rawgeti(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
+		//lua_pcall(State, 0, 0, 0);
 
 	}
-	else return 0;
+	//else return 0;
 	
 	return 0;
 }
 
-//int CLuaLibrary::Lua_hook_Add(lua_State *LState) {
-//	//string f = lua_getfiel
-//	std::string _name = lua_tostring(LState, 1);
-//	std::string _id = lua_tostring(LState, 2);
-//	lua_CFunction _func = lua_tocfunction(LState, 3);
-//
-//	return 0;
-//}
+void CLuaSerial::SerialRecv( CLuaSerialPort * Port )
+{
+	PRINT_DEBUG("Opened Thread for: %s\n", Port->m_Name.c_str());
+	for (;;)
+	{
+		//ReadFile(_hSerial, &_databyte, 1, &bytes_written, NULL);
 
+	}
+}
 
 #endif

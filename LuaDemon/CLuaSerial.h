@@ -34,6 +34,8 @@ class CLuaSerial: public CLuaLib
 	static int Lua_Send(lua_State * State); //Args: string Port, number Data (0-255)
 	static int Lua_Receive(lua_State * State); //Args: string Port, function LuaCallback
 
+	static void SerialRecv(CLuaSerialPort * Port); // Thread worker for receiving data
+
 public:
 	static std::map<std::string, CLuaSerialPort *> m_PortList;
 

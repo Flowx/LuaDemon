@@ -7,13 +7,13 @@ print("Test! Dir: " .. _LUAENV.ENVDIR)
 print("Test! System: " .. _LUAENV.ENVSYS)
 
 local f2 = function(Data)
-	print("aaaaaaaaaaaaaaaaa")
+	print("aaaaaaaaaaaaaaaaa\n")
 end
 
 local PORT = "COM4"
 serial.Open(PORT, 9600)
 serial.Receive(PORT, function(Data)
-	print("got something")
+	print("got something\n")
 end)
 
 serial.Receive(PORT, f2);
