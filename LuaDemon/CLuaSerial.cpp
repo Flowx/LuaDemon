@@ -26,6 +26,9 @@ void CLuaSerial::PushFunctions()
 	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_Receive);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "Receive");
 
+	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_Available);
+	lua_setfield(CLuaEnvironment::_LuaState, -2, "Available");
+
 	lua_setglobal(CLuaEnvironment::_LuaState, "serial");
 }
 

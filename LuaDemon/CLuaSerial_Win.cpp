@@ -12,6 +12,9 @@ std::map<std::string, CLuaSerialPort *> CLuaSerial::m_PortList;
 
 // Lua Exposed Functions
 
+// Lua param:
+// none
+// Returns all available COM Ports
 int CLuaSerial::Lua_Discover(lua_State * State)
 {
 	char _paths[0xFF], _namebuf[7];
@@ -37,6 +40,7 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 
 // Lua param:
 // string Portname, number Portspeed = 9600, number Bytesize = 8, number Stopbits = 1
+// Opens a new COM Port
 int CLuaSerial::Lua_Open(lua_State * State) 
 {
 	std::string _portname = lua_tostring(State, 1);
@@ -60,13 +64,15 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	}
 
 	std::string buff = ("\\\\.\\" + _portname);
-	HANDLE _comHandle = CreateFile(buff.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	HANDLE _comHandle = CreateFile(buff.c_str(), (GENERIC_READ | GENERIC_WRITE), (FILE_SHARE_READ | FILE_SHARE_WRITE), 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (_comHandle == INVALID_HANDLE_VALUE)
 	{
 		PRINT_DEBUG("Failed to open port %s\n", _portname.c_str());
 		lua_pushboolean(State, FALSE);
 		return 1;
 	}
+
+#pragma region Settings
 
 	COMMTIMEOUTS _Timeouts;
 
@@ -75,28 +81,21 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	_Timeouts.ReadTotalTimeoutConstant = 1;
 	_Timeouts.WriteTotalTimeoutMultiplier = 1;
 	_Timeouts.WriteTotalTimeoutConstant = 1;
-	if (!SetCommTimeouts(_comHandle, &_Timeouts)) 
-	{
+	if (!SetCommTimeouts(_comHandle, &_Timeouts)) PRINT_WARNING("Failed to set Timeouts\n");
 
-	}
+	DCB _serialParams = { 0 };
+	_serialParams.DCBlength = sizeof(_serialParams);
 
-	DCB serialParams = { 0 };
-	serialParams.DCBlength = sizeof(serialParams);
+	GetCommState(_comHandle, &_serialParams);
+	_serialParams.BaudRate = _portspeed;
+	_serialParams.ByteSize = _bytesize;
+	_serialParams.StopBits = _stopbits;
+	_serialParams.Parity = 0;
+	_serialParams.fDtrControl = 0;
+	_serialParams.fRtsControl = 0;
+	SetCommState(_comHandle, &_serialParams);
 
-	GetCommState(_comHandle, &serialParams);
-	serialParams.BaudRate = _portspeed;
-	serialParams.ByteSize = _bytesize;
-	serialParams.StopBits = _stopbits;
-	serialParams.Parity = 0;
-	serialParams.fDtrControl = 0;
-	serialParams.fRtsControl = 0;
-	SetCommState(_comHandle, &serialParams);
-
-	/*
-	CLuaSerialPort myPort = CLuaSerialPort(_portname.c_str());
-	myPort.m_Reference = _comHandle;
-	CLuaSerial::m_PortList[_portname] = &myPort;*/
-	//CLuaSerial::m_PortList[_portname] = myPort;
+#pragma endregion
 
 	CLuaSerial::m_PortList[_portname] = new CLuaSerialPort(_portname.c_str());
 	CLuaSerial::m_PortList[_portname]->m_PortReference = _comHandle;
@@ -106,7 +105,8 @@ int CLuaSerial::Lua_Open(lua_State * State)
 }
 
 // Lua param:
-// string Portname, number data (0-255)
+// string Portname, var Data
+// Sends Data
 // TODO: FINISH IT!!!!
 int CLuaSerial::Lua_Send(lua_State * State)
 {
@@ -132,6 +132,35 @@ int CLuaSerial::Lua_Send(lua_State * State)
 	return 0;
 }
 
+// Lua param:
+// string Portname
+// Returns available data (in bytes) ready to be read
+int CLuaSerial::Lua_Available(lua_State * State)
+{
+	std::string _portname = lua_tostring(State, 1);
+
+	if (_portname.empty()) return 0;
+
+	if (m_PortList.count(_portname) > 0)
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+
+		COMSTAT _s;
+		ClearCommError(_P->m_PortReference, 0, &_s);
+
+		_P->m_Available = _s.cbInQue;
+
+		lua_pushinteger(State, _P->m_Available);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+// Lua param:
+// string Portname, function Callback
+// Receives Data
 int CLuaSerial::Lua_Receive(lua_State * State)
 {
 	std::string _portname = lua_tostring(State, 1);
@@ -166,30 +195,33 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 	return 0;
 }
 
+
+// TODO: Move this to the "Cycle" function.
 void CLuaSerial::SerialRecv( CLuaSerialPort * Port )
 {
 	PRINT_DEBUG("Opened Thread for: %s\n", Port->m_Name.c_str());
 
-	LPDWORD _bytes = 0;
+	//LPDWORD _bytes = 0;
 	HANDLE _Port = Port->m_PortReference;
-	void * _Buff = &(Port->m_Buffer);
+	
+	char _lBuff[16];
+	memset(_lBuff, 0, sizeof(_lBuff));
+
 	for (;;)
 	{
-		char _lBuff[16];
-		memset(_lBuff, 0, sizeof(_lBuff));
-		
-		COMSTAT _s;
-		LPDWORD _err;
-		int b = ClearCommError(_Port, _bytes, &_s);
+		COMSTAT _Stat;
+		ClearCommError(_Port, 0, &_Stat);
 
-		if (_s.cbInQue != 0) 
+		if (_Stat.cbInQue > Port->m_LastAvailable)
 		{
-			PRINT_DEBUG("Data!");
+			Port->m_Available = _Stat.cbInQue;
+			int a = ReadFile(_Port, _lBuff, 2, 0, 0);
+			PRINT_DEBUG("RECEIVED: %s\n", _lBuff);
 		}
-		
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1)); // reload doesnt work reliably without this for some reason
 
-		int a = ReadFile(_Port, &_Buff, 2, _bytes, NULL);
+
+		std::this_thread::sleep_for(std::chrono::microseconds(10)); // 100kHz is a plenty high poll rate
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1)); // reload doesnt work reliably without this for some reason
 	}
 }
 
