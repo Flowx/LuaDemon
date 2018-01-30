@@ -2,6 +2,7 @@
 #include "CLuaLib.h"
 #include "CLuaEnvironment.h"
 #include <map>
+#include <vector>
 
 #if _WIN32 // ignore this file on linux
 #include <Windows.h>
@@ -16,6 +17,8 @@ public:
 	std::thread m_Thread;
 	std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
 	
+	std::vector<char> m_Buffer;
+
 	int m_LuaReference;
 
 #if _WIN32 // a little messy but better than having everything twice

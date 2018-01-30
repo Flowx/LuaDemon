@@ -44,8 +44,8 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	if (_portname.empty()) return 0;
 
 	size_t _portspeed = lua_tointeger(State, 2);
-	size_t _bytesize = lua_tointeger(State, 3);
-	size_t _stopbits = lua_tointeger(State, 4);
+	char _bytesize = lua_tointeger(State, 3);
+	char _stopbits = lua_tointeger(State, 4);
 
 	if (!_portspeed) _portspeed = 9600;
 	if (!_bytesize) _bytesize = 8;
@@ -60,14 +60,39 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	}
 
 	std::string buff = ("\\\\.\\" + _portname);
-	HANDLE _comHandle = CreateFile(buff.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+	HANDLE _comHandle = CreateFile(buff.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (_comHandle == INVALID_HANDLE_VALUE)
 	{
 		PRINT_DEBUG("Failed to open port %s\n", _portname.c_str());
 		lua_pushboolean(State, FALSE);
 		return 1;
 	}
-/*
+
+	COMMTIMEOUTS _Timeouts;
+
+	_Timeouts.ReadIntervalTimeout = 1;
+	_Timeouts.ReadTotalTimeoutMultiplier = 1;
+	_Timeouts.ReadTotalTimeoutConstant = 1;
+	_Timeouts.WriteTotalTimeoutMultiplier = 1;
+	_Timeouts.WriteTotalTimeoutConstant = 1;
+	if (!SetCommTimeouts(_comHandle, &_Timeouts)) 
+	{
+
+	}
+
+	DCB serialParams = { 0 };
+	serialParams.DCBlength = sizeof(serialParams);
+
+	GetCommState(_comHandle, &serialParams);
+	serialParams.BaudRate = _portspeed;
+	serialParams.ByteSize = _bytesize;
+	serialParams.StopBits = _stopbits;
+	serialParams.Parity = 0;
+	serialParams.fDtrControl = 0;
+	serialParams.fRtsControl = 0;
+	SetCommState(_comHandle, &serialParams);
+
+	/*
 	CLuaSerialPort myPort = CLuaSerialPort(_portname.c_str());
 	myPort.m_Reference = _comHandle;
 	CLuaSerial::m_PortList[_portname] = &myPort;*/
@@ -126,8 +151,10 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 		// function has to be last argument or this will create a wrong reference
 		_P->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
 
-		_P->m_Thread = std::thread(&(CLuaSerial::SerialRecv), _P);
-		_P->m_Thread.detach();
+		std::thread _T(&(CLuaSerial::SerialRecv), _P);
+		_T.detach();
+
+		//_P->m_Thread = a;
 
 		// push and call
 		//lua_rawgeti(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
@@ -142,10 +169,27 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 void CLuaSerial::SerialRecv( CLuaSerialPort * Port )
 {
 	PRINT_DEBUG("Opened Thread for: %s\n", Port->m_Name.c_str());
+
+	LPDWORD _bytes = 0;
+	HANDLE _Port = Port->m_PortReference;
+	void * _Buff = &(Port->m_Buffer);
 	for (;;)
 	{
-		//ReadFile(_hSerial, &_databyte, 1, &bytes_written, NULL);
+		char _lBuff[16];
+		memset(_lBuff, 0, sizeof(_lBuff));
+		
+		COMSTAT _s;
+		LPDWORD _err;
+		int b = ClearCommError(_Port, _bytes, &_s);
 
+		if (_s.cbInQue != 0) 
+		{
+			PRINT_DEBUG("Data!");
+		}
+		
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1)); // reload doesnt work reliably without this for some reason
+
+		int a = ReadFile(_Port, &_Buff, 2, _bytes, NULL);
 	}
 }
 
