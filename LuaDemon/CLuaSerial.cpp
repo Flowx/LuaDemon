@@ -1,14 +1,12 @@
 #include "CLuaSerial.h"
 
-
+#include "PlatformCompatibility.h"
 
 CLuaSerialPort::CLuaSerialPort(const char * Name)
 {
 	m_Name = Name;
 	//CLuaSerial::m_PortList[m_Name] = this;
 }
-
-
 
 void CLuaSerial::PushFunctions()
 {
@@ -29,11 +27,10 @@ void CLuaSerial::PushFunctions()
 	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_Available);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "Available");
 
-	lua_setglobal(CLuaEnvironment::_LuaState, "serial");
-}
+	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_ReadAll);
+	lua_setfield(CLuaEnvironment::_LuaState, -2, "ReadAll");
 
-void CLuaSerial::PollFunctions()
-{
+	lua_setglobal(CLuaEnvironment::_LuaState, "serial");
 }
 
 void CLuaSerial::LoadFunctions()

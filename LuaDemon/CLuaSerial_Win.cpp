@@ -159,6 +159,35 @@ int CLuaSerial::Lua_Available(lua_State * State)
 }
 
 // Lua param:
+// string Portname
+// Read all currently available data; Returns string
+int CLuaSerial::Lua_ReadAll(lua_State * State)
+{
+	std::string _portname = lua_tostring(State, 1);
+
+	if (_portname.empty()) return 0;
+
+	if (m_PortList.count(_portname) > 0)
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+
+		COMSTAT _Stat;
+		ClearCommError(_P->m_PortReference, 0, &_Stat);
+
+		size_t _Length = _Stat.cbInQue;
+
+		char * _Buffer = new (std::nothrow) char[_Length];
+
+		ReadFile(_P->m_PortReference, _Buffer, _Length, 0, 0);
+
+		lua_pushlstring(State, _Buffer, _Length);
+
+		return 1;
+	}
+	return 0;
+}
+
+// Lua param:
 // string Portname, function Callback
 // Receives Data
 int CLuaSerial::Lua_Receive(lua_State * State)
@@ -179,50 +208,37 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 
 		// function has to be last argument or this will create a wrong reference
 		_P->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
-
-		std::thread _T(&(CLuaSerial::SerialRecv), _P);
-		_T.detach();
-
-		//_P->m_Thread = a;
-
-		// push and call
-		//lua_rawgeti(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
-		//lua_pcall(State, 0, 0, 0);
-
 	}
-	//else return 0;
-	
+
 	return 0;
 }
 
-
-// TODO: Move this to the "Cycle" function.
-void CLuaSerial::SerialRecv( CLuaSerialPort * Port )
+void CLuaSerial::PollFunctions()
 {
-	PRINT_DEBUG("Opened Thread for: %s\n", Port->m_Name.c_str());
-
-	//LPDWORD _bytes = 0;
-	HANDLE _Port = Port->m_PortReference;
-	
-	char _lBuff[16];
-	memset(_lBuff, 0, sizeof(_lBuff));
-
-	for (;;)
+	for (std::pair<std::string, CLuaSerialPort*> _v : m_PortList)
 	{
+		CLuaSerialPort * Port = _v.second;
+
+		if (Port->m_PortReference == INVALID_HANDLE_VALUE)
+		{
+			PRINT_DEBUG("Port %s has invalid Handle\n", Port->m_Name.c_str());
+			continue;
+		}
+
 		COMSTAT _Stat;
-		ClearCommError(_Port, 0, &_Stat);
+		ClearCommError(Port->m_PortReference, 0, &_Stat);
 
 		if (_Stat.cbInQue > Port->m_LastAvailable)
 		{
 			Port->m_Available = _Stat.cbInQue;
-			int a = ReadFile(_Port, _lBuff, 2, 0, 0);
-			PRINT_DEBUG("RECEIVED: %s\n", _lBuff);
+			Port->m_LastAvailable = _Stat.cbInQue;
+
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, Port->m_LuaReference);
+			lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0);
 		}
-
-
-		std::this_thread::sleep_for(std::chrono::microseconds(10)); // 100kHz is a plenty high poll rate
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1)); // reload doesnt work reliably without this for some reason
 	}
 }
+
+
 
 #endif

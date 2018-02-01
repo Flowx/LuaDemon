@@ -14,12 +14,9 @@ public:
 	CLuaSerialPort(const char * Name);
 	//~CLuaSerialPort();
 
-	std::thread m_Thread;
 	std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
 	
-	std::vector<char> m_Buffer;
 	long m_Available = 0;
-
 	long m_LastAvailable = 0;
 
 	int m_LuaReference;
@@ -40,8 +37,7 @@ class CLuaSerial: public CLuaLib
 	static int Lua_Send(lua_State * State); //Args: string Port, number Data (0-255)
 	static int Lua_Receive(lua_State * State); //Args: string Port, function LuaCallback
 	static int Lua_Available(lua_State * State); //Args: string Port
-
-	static void SerialRecv(CLuaSerialPort * Port); // Thread worker for receiving data
+	static int Lua_ReadAll(lua_State * State); //Args: string Port
 
 public:
 	static std::map<std::string, CLuaSerialPort *> m_PortList;
