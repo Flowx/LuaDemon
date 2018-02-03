@@ -13,16 +13,18 @@ serial.Open(PORT_A, 9600)
 serial.Receive(PORT_A, function(Data)
 	--print("got something\n")
 	local a = serial.ReadAll(PORT_A)
+	a = nil
 	print(type(a))
 	print("Data: " .. a)
 end)
 
 
 serial.Open(PORT_B, 9600)
-serial.Receive(PORT_B, function(Data)
-	--print("got something else a\n")
-	print("Data: " .. serial.ReadAll(PORT_B))
-end)
+-- serial.Receive(PORT_B, function(Data)
+	-- --print("got something else a\n")
+	-- print("Data: " .. serial.ReadAll(PORT_B))
+-- end)
+serial.Receive(PORT_B)
 
 do -- Test delay
 	local count = 0

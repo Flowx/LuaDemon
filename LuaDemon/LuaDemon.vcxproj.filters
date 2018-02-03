@@ -22,6 +22,12 @@
     <Filter Include="Lua_Test_Directory">
       <UniqueIdentifier>{2010c8ae-8e73-4aa7-add2-3d9eb6eaedce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Libraries">
+      <UniqueIdentifier>{4817dfaf-a6b6-40a5-aa58-c2c4010dd518}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Libraries">
+      <UniqueIdentifier>{fc5fbb44-a7ce-4927-a694-dd995d49ccac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -36,23 +42,26 @@
     <ClCompile Include="PlatformCompatibility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaStdLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaNet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CLuaLib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LibraryLinks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaSerial_Win.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="CLuaNet.cpp">
+      <Filter>Source Files\Libraries</Filter>
     </ClCompile>
     <ClCompile Include="CLuaSerial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaSerial_Win.cpp">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaStdLib.cpp">
+      <Filter>Source Files\Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaSerial_Linuxcpp.cpp">
+      <Filter>Source Files\Libraries</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,17 +89,17 @@
     <ClInclude Include="PlatformCompatibility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CLuaStdLib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CLuaNet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CLuaLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLuaStdLib.h">
+      <Filter>Header Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaNet.h">
+      <Filter>Header Files\Libraries</Filter>
+    </ClInclude>
     <ClInclude Include="CLuaSerial.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Libraries</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

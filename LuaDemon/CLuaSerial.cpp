@@ -5,7 +5,6 @@
 CLuaSerialPort::CLuaSerialPort(const char * Name)
 {
 	m_Name = Name;
-	//CLuaSerial::m_PortList[m_Name] = this;
 }
 
 void CLuaSerial::PushFunctions()

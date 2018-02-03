@@ -111,7 +111,6 @@ int CLuaSerial::Lua_Open(lua_State * State)
 int CLuaSerial::Lua_Send(lua_State * State)
 {
 	std::string _portname = lua_tostring(State, 1);
-	char _databyte = (char)lua_tointeger(State, 2);
 
 	if (_portname.empty()) return 0;
 
@@ -125,9 +124,9 @@ int CLuaSerial::Lua_Send(lua_State * State)
 
 	if (_hSerial == INVALID_HANDLE_VALUE) return 0;
 
-	DWORD bytes_written;
-	
-	int a = WriteFile(_hSerial, &_databyte, 1, &bytes_written, NULL);
+	char _databyte = (char)lua_tointeger(State, 2);
+
+	int a = WriteFile(_hSerial, &_databyte, 1, 0, 0);
 
 	return 0;
 }
@@ -148,9 +147,7 @@ int CLuaSerial::Lua_Available(lua_State * State)
 		COMSTAT _s;
 		ClearCommError(_P->m_PortReference, 0, &_s);
 
-		_P->m_Available = _s.cbInQue;
-
-		lua_pushinteger(State, _P->m_Available);
+		lua_pushinteger(State, _s.cbInQue);
 
 		return 1;
 	}
@@ -165,9 +162,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 {
 	std::string _portname = lua_tostring(State, 1);
 
-	if (_portname.empty()) return 0;
-
-	if (m_PortList.count(_portname) > 0)
+	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
 	{
 		CLuaSerialPort *_P = m_PortList[_portname];
 
@@ -176,6 +171,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 		size_t _Length = _Stat.cbInQue;
 
+		// TODO: FIX MEMORY LEAK
 		char * _Buffer = new (std::nothrow) char[_Length];
 
 		ReadFile(_P->m_PortReference, _Buffer, _Length, 0, 0);
@@ -193,7 +189,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 int CLuaSerial::Lua_Receive(lua_State * State)
 {
 	std::string _portname = lua_tostring(State, 1);
-	
+
 	if (_portname.empty() || !lua_isfunction(State, 2)) return 0;
 
 	if (m_PortList.count(_portname) > 0)
@@ -230,11 +226,17 @@ void CLuaSerial::PollFunctions()
 
 		if (_Stat.cbInQue > Port->m_LastAvailable)
 		{
-			Port->m_Available = _Stat.cbInQue;
 			Port->m_LastAvailable = _Stat.cbInQue;
 
-			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, Port->m_LuaReference);
-			lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0);
+			if (!Port->m_LuaReference) continue; // no Lua function available
+
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, Port->m_LuaReference); // push the referenced function on the stack and pcall it
+			
+			if (lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0)) // Some error occured
+			{
+				PRINT_WARNING("ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				lua_pop(CLuaEnvironment::_LuaState, 1);
+			}
 		}
 	}
 }

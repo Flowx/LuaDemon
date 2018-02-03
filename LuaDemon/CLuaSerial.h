@@ -16,8 +16,10 @@ public:
 
 	std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
 	
-	long m_Available = 0;
 	long m_LastAvailable = 0;
+
+	char * m_FreeBuffer; // this buffer has to be freed after ReadAll returns!
+	bool m_IsFreed;
 
 	int m_LuaReference;
 
