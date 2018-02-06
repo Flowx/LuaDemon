@@ -80,7 +80,7 @@
     <ClCompile Include="CLuaLib.cpp" />
     <ClCompile Include="CLuaNet.cpp" />
     <ClCompile Include="CLuaSerial.cpp" />
-    <ClCompile Include="CLuaSerial_Linuxcpp.cpp" />
+    <ClCompile Include="CLuaSerial_Linux.cpp" />
     <ClCompile Include="CLuaStdLib.cpp" />
     <ClCompile Include="FileSpy.cpp" />
     <ClCompile Include="CLuaSerial_Win.cpp" />

@@ -25,14 +25,14 @@ public:
 
 #if _WIN32 // a little messy but better than having everything twice
 	HANDLE m_PortReference; // Windows Handle
-#elif
+#else
 	int m_PortReference; // Linux File Descriptor
 #endif
 
 	//void operator delete(void *) {} // works but good luck with the memory leak
 };
 
-class CLuaSerial: public CLuaLib
+class CLuaSerial //: public CLuaLib
 {
 	static int Lua_Discover(lua_State * State); //Args: none
 	static int Lua_Open(lua_State * State); //Args: string Port, string Name

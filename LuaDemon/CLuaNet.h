@@ -2,7 +2,7 @@
 #include "CLuaLib.h"
 #include "CLuaEnvironment.h"
 
-class CLuaNet: public CLuaLib
+class CLuaNet
 {
 	static int Lua_createSocket(lua_State * State);
 

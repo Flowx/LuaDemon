@@ -60,7 +60,7 @@
     <ClCompile Include="CLuaStdLib.cpp">
       <Filter>Source Files\Libraries</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaSerial_Linuxcpp.cpp">
+    <ClCompile Include="CLuaSerial_Linux.cpp">
       <Filter>Source Files\Libraries</Filter>
     </ClCompile>
   </ItemGroup>

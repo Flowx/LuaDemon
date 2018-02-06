@@ -49,18 +49,42 @@ void CLuaEnvironment::FileSpy()
 
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
-
-//#define BUF_LEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
+#include <dirent.h>
+#include <vector>
+#include <string>
 
 #define EVENT_SIZE  ( sizeof (struct inotify_event) )
 #define BUF_LEN     ( 1024 * ( EVENT_SIZE + 16 ) )
 
-// TODO: this is half assed and should be cleaned up
+std::vector<std::string> _DirectoryList = std::vector<std::string>();
+
+void ReadDirectory(std::string dir)
+{
+	DIR *dp;
+	if ((dp = opendir(dir.c_str())) == NULL) {
+		PRINT_ERROR("Directory lookup failed. Dir: %s\n", dir.c_str());
+		return;
+	}
+
+	struct dirent *_entry;
+	while ((_entry = readdir(dp)) != NULL) {
+		std::string _tmp = _entry->d_name;
+		if (_tmp == "." || _tmp == ".." || _entry->d_type != DT_DIR) continue;
+		ReadDirectory((dir + _tmp + '/'));
+		_DirectoryList.push_back(std::string(dir + _tmp + '/'));
+	}
+	closedir(dp);
+}
+
+// Now supports recursive directory lookup
+// cant do anything about the spastic reloads caused by shitty Linux editors though
 void CLuaEnvironment::FileSpy()
 {
 	using namespace std::chrono;
 	time_point<system_clock> _lastChange;
 	char buf[BUF_LEN];
+
+	ReadDirectory(_Directory.c_str());
 
 	int inotifyFd = inotify_init();
 	if (inotifyFd == -1)
@@ -69,13 +93,12 @@ void CLuaEnvironment::FileSpy()
 		return;
 	}
 
-	int wd = inotify_add_watch(inotifyFd, _Directory.c_str(), IN_CLOSE_WRITE);
+	_DirectoryList.push_back(_Directory);
+
+	for (unsigned int i = 0; i < _DirectoryList.size(); i++) inotify_add_watch(inotifyFd, _DirectoryList[i].c_str(), IN_CLOSE_WRITE);
 
 	for (;;) 
 	{
-		// Block until no errors and current env is ready
-		while (!_Initialized & !_Error) std::this_thread::sleep_for(std::chrono::milliseconds(1)); 
-
 		int numRead = read(inotifyFd, buf, BUF_LEN);
 		if (numRead == 0 || numRead == -1)
 		{

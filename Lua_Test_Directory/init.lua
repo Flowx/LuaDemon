@@ -19,6 +19,8 @@ serial.Receive(PORT_A, function(Data)
 end)
 
 
+
+print(serial)
 serial.Open(PORT_B, 9600)
 -- serial.Receive(PORT_B, function(Data)
 	-- --print("got something else a\n")
@@ -29,24 +31,23 @@ serial.Receive(PORT_B)
 do -- Test delay
 	local count = 0
 	while true do
-		serial.Send(PORT_A, 65)
-		serial.Send(PORT_B, 66)
-		for i=1,1000000 do local a = {} end
+		-- serial.Send(PORT_A, 65)
+		-- serial.Send(PORT_B, 66)
+		-- for i=1,1000000 do local a = {} end
 		
-		print("Available A: " .. serial.Available(PORT_A))
-		print("Data: " .. serial.ReadAll(PORT_A))
-		print("Available B: " .. serial.Available(PORT_B))
-		print("Data: " .. serial.ReadAll(PORT_B))
+		-- print("Available A: " .. serial.Available(PORT_A))
+		-- print("Data: " .. serial.ReadAll(PORT_A))
+		-- print("Available B: " .. serial.Available(PORT_B))
+		-- print("Data: " .. serial.ReadAll(PORT_B))
 		
-		serial.Send(PORT_A, 66)
-		serial.Send(PORT_B, 65)
-		for i=1,1000000 do local a = {} end
+		-- serial.Send(PORT_A, 66)
+		-- serial.Send(PORT_B, 65)
+		-- for i=1,1000000 do local a = {} end
 		
-		print("Available A: " .. serial.Available(PORT_A))
-		print("Data: " .. serial.ReadAll(PORT_A))
-		print("Available B: " .. serial.Available(PORT_B))
-		print("Data: " .. serial.ReadAll(PORT_B))
-		
+		-- print("Available A: " .. serial.Available(PORT_A))
+		-- print("Data: " .. serial.ReadAll(PORT_A))
+		-- print("Available B: " .. serial.Available(PORT_B))
+		-- print("Data: " .. serial.ReadAll(PORT_))
 		
 		print("\nCount: " .. count)
 		
