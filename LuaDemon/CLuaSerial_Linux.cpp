@@ -16,10 +16,10 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 
 	//size_t _k = 0;
 
-	//lua_newtable(State);
+	lua_newtable(State);
 
-	//for (int i = 0; i <= 0xFF; i++)
-	//{
+	for (int i = 0; i <= 0xFF; i++)
+	{
 	//	sprintf(_namebuf, "COM%i", i);
 	//	if (QueryDosDevice(_namebuf, _paths, sizeof(_paths)))
 	//	{
@@ -28,7 +28,7 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 	//		lua_pushstring(State, _namebuf);
 	//		lua_settable(State, -3);
 	//	}
-	//}
+	}
 
 	return 0;
 }
