@@ -171,12 +171,13 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 		size_t _Length = _Stat.cbInQue;
 
-		// TODO: FIX MEMORY LEAK
-		char * _Buffer = new (std::nothrow) char[_Length];
+		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
 
-		ReadFile(_P->m_PortReference, _Buffer, _Length, 0, 0);
+		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, _Length, 0, 0);
 
-		lua_pushlstring(State, _Buffer, _Length);
+		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
+
+		_P->m_IsFreed = false;
 
 		return 1;
 	}
@@ -221,6 +222,14 @@ void CLuaSerial::PollFunctions()
 			continue;
 		}
 
+		if (!Port->m_IsFreed && Port->m_FreeBuffer != 0) // This deletes the buffer created by ReadAll()
+		{
+			delete[] Port->m_FreeBuffer;
+			Port->m_IsFreed = true;
+			Port->m_FreeBuffer = NULL;
+		}
+
+		// Calls the lua callback whenever a new byte arrives
 		COMSTAT _Stat;
 		ClearCommError(Port->m_PortReference, 0, &_Stat);
 
@@ -234,7 +243,7 @@ void CLuaSerial::PollFunctions()
 			
 			if (lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0)) // Some error occured
 			{
-				PRINT_WARNING("ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				PRINT_WARNING("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
 				lua_pop(CLuaEnvironment::_LuaState, 1);
 			}
 		}
