@@ -113,7 +113,6 @@ int CLuaSerial::Lua_Open(lua_State * State)
 
 
 
-
 	lua_pushboolean(State, 1);
 	return 1;
 }
