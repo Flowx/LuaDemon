@@ -2,9 +2,9 @@
 
 #include "CLuaSerial.h"
 #include "PlatformCompatibility.h"
-//#include <stdio.h>
-//#include <termios.h>
+#include <termios.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
 std::map<std::string, CLuaSerialPort *> CLuaSerial::m_PortList;
 
@@ -57,16 +57,14 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	if (m_PortList.count(_portname) > 0) // there is already a Lua serial port on this port
 	{
 		CLuaSerialPort *_P = m_PortList[_portname];
-		//CloseHandle(_P->m_PortReference);
+		// NOTE: Close file handle
 		delete _P;
 		m_PortList.erase(_portname);
 	}
 
-	int fd; // file description for the serial port
-
 	std::string buff = ("/dev/" + _portname); // NOTE: This provides access to everything in dev/ --- Is this a security issue?
 
-	fd = open(buff.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+	int fd = open(buff.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1)
 	{
 		PRINT_DEBUG("Failed to open port %s (Missing permissions?)\n", _portname.c_str());
@@ -111,7 +109,8 @@ int CLuaSerial::Lua_Open(lua_State * State)
 		return 1;
 	}
 
-
+	CLuaSerial::m_PortList[_portname] = new CLuaSerialPort(_portname.c_str());
+	CLuaSerial::m_PortList[_portname]->m_PortReference = fd;
 
 	lua_pushboolean(State, 1);
 	return 1;
@@ -120,8 +119,27 @@ int CLuaSerial::Lua_Open(lua_State * State)
 // Lua param:
 // string Portname, var Data
 // Sends Data
+// NOTE: Crude and unsafe but works for now
 int CLuaSerial::Lua_Send(lua_State * State)
 {
+	std::string _portname = lua_tostring(State, 1);
+
+	if (_portname.empty()) return 0;
+
+	int _file;
+	if (m_PortList.count(_portname) > 0)
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+		_file = _P->m_PortReference;
+	}
+	else return 0;
+
+	//if (_file == INVALID_HANDLE_VALUE) return 0;
+
+	char _databyte = (char)lua_tointeger(State, 2);
+
+	int a = write(_file, &_databyte, 1);
+
 	return 0;
 }
 
@@ -130,6 +148,23 @@ int CLuaSerial::Lua_Send(lua_State * State)
 // Returns available data (in bytes) ready to be read
 int CLuaSerial::Lua_Available(lua_State * State)
 {
+	std::string _portname = lua_tostring(State, 1);
+
+	if (_portname.empty()) return 0;
+
+	if (m_PortList.count(_portname) > 0)
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+		
+		int _available = 0;
+
+		ioctl(_P->m_PortReference, FIONREAD, &_available);
+
+		lua_pushinteger(State, _available);
+
+		return 1;
+	}
+
 	return 0;
 }
 

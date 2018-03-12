@@ -40,6 +40,7 @@ class CLuaSerial //: public CLuaLib
 	static int Lua_Receive(lua_State * State); //Args: string Port, function LuaCallback
 	static int Lua_Available(lua_State * State); //Args: string Port
 	static int Lua_ReadAll(lua_State * State); //Args: string Port
+	static int Lua_ListOpen(lua_State * State); //Args: string Port
 
 public:
 	static std::map<std::string, CLuaSerialPort *> m_PortList;
