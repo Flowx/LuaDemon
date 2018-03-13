@@ -55,7 +55,7 @@ do -- Test delay
 		for i=1,1000000 do local a = {} end
 		
 		print("Available A: " .. serial.Available(PORT_A))
-		-- print("Data: " .. serial.ReadAll(PORT_A))
+		print("Data: " .. serial.ReadAll(PORT_A))
 		-- print("Available B: " .. serial.Available(PORT_B))
 		-- print("Data: " .. serial.ReadAll(PORT_))
 		

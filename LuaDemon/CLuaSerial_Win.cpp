@@ -179,34 +179,10 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 		_P->m_IsFreed = false;
 
+		_P->m_LastAvailable = 0;
+
 		return 1;
 	}
-	return 0;
-}
-
-// Lua param:
-// string Portname, function Callback
-// Receives Data
-int CLuaSerial::Lua_Receive(lua_State * State)
-{
-	std::string _portname = lua_tostring(State, 1);
-
-	if (_portname.empty() || !lua_isfunction(State, 2)) return 0;
-
-	if (m_PortList.count(_portname) > 0)
-	{
-		CLuaSerialPort *_P = m_PortList[_portname];
-		
-		if (_P->m_LuaReference != 0) // there already is a function hooked to this port
-		{
-			PRINT_DEBUG("Removed old hook!\n");
-			luaL_unref(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
-		}
-
-		// function has to be last argument or this will create a wrong reference
-		_P->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
-	}
-
 	return 0;
 }
 

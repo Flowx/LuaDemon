@@ -173,21 +173,73 @@ int CLuaSerial::Lua_Available(lua_State * State)
 // Read all currently available data; Returns string
 int CLuaSerial::Lua_ReadAll(lua_State * State)
 {
+	std::string _portname = lua_tostring(State, 1);
+
+	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+
+		size_t _Length = 0;
+
+		ioctl(_P->m_PortReference, FIONREAD, &_Length);
+
+		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
+		_P->m_IsFreed = false;
+
+		if(read(_P->m_PortReference, _P->m_FreeBuffer, _Length) != _Length )
+		{
+			PRINT_WARNING("Read on %s failed!\n", _portname);
+			return 0;
+		}
+
+		_P->m_LastAvailable = 0;
+
+		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
+
+		return 1;
+	}
 	return 0;
 }
-
-
-// Lua param:
-// string Portname, function Callback
-// Receives Data
-int CLuaSerial::Lua_Receive(lua_State * State)
-{
-	return 0;
-}
-
 
 void CLuaSerial::PollFunctions()
 {
+	for (std::pair<std::string, CLuaSerialPort*> _v : m_PortList)
+	{
+		CLuaSerialPort * Port = _v.second;
+
+		// TODO: Add ioctl to check if file descriptor is valid
+		//if (Port->m_PortReference == INVALID_HANDLE_VALUE)
+		//{
+		//	PRINT_DEBUG("Port %s has invalid Handle\n", Port->m_Name.c_str());
+		//	continue;
+		//}
+
+		if (!Port->m_IsFreed && Port->m_FreeBuffer != 0) // This deletes the buffer created by ReadAll()
+		{
+			delete[] Port->m_FreeBuffer;
+			Port->m_IsFreed = true;
+			Port->m_FreeBuffer = NULL;
+		}
+
+		// Calls the lua callback whenever a new byte arrives
+		size_t _Available = 0;
+		ioctl(Port->m_PortReference, FIONREAD, &_Available);
+
+		if (_Available > Port->m_LastAvailable)
+		{
+			Port->m_LastAvailable = _Available;
+
+			if (!Port->m_LuaReference) continue; // no Lua function available
+
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, Port->m_LuaReference); // push the referenced function on the stack and pcall it
+
+			if (lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0)) // Some error occured
+			{
+				PRINT_WARNING("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				lua_pop(CLuaEnvironment::_LuaState, 1);
+			}
+		}
+	}
 }
 
 #endif
