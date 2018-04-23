@@ -18,7 +18,7 @@ public:
 	
 	long m_LastAvailable = 0;
 
-	char * m_FreeBuffer; // this buffer has to be freed after ReadAll returns!
+	char * m_FreeBuffer; // this buffer has to be freed after Read or ReadAll returns!
 	bool m_IsFreed;
 
 	int m_LuaReference;
@@ -34,13 +34,14 @@ public:
 
 class CLuaSerial //: public CLuaLib
 {
-	static int Lua_Discover(lua_State * State); //Args: none; Only works on Windows right now!
-	static int Lua_Open(lua_State * State); //Args: string Port, string Name
-	static int Lua_Send(lua_State * State); //Args: string Port, number Data (0-255)
-	static int Lua_Receive(lua_State * State); //Args: string Port, function LuaCallback
-	static int Lua_Available(lua_State * State); //Args: string Port
-	static int Lua_ReadAll(lua_State * State); //Args: string Port
-	static int Lua_ListOpen(lua_State * State); //Args: string Port
+	static int Lua_Discover(lua_State * State);		//Args: none; Only works on Windows right now!
+	static int Lua_Open(lua_State * State);			//Args: string Port, string Name
+	static int Lua_Send(lua_State * State);			//Args: string Port, number Data (0-255)
+	static int Lua_Receive(lua_State * State);		//Args: string Port, function LuaCallback
+	static int Lua_Available(lua_State * State);	//Args: string Port
+	static int Lua_Read(lua_State * State);			//Args: string Port, number amount
+	static int Lua_ReadAll(lua_State * State);		//Args: string Port
+	static int Lua_ListOpen(lua_State * State);		//Args: string Port
 
 public:
 	static std::map<std::string, CLuaSerialPort *> m_PortList;

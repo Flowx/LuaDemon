@@ -169,6 +169,39 @@ int CLuaSerial::Lua_Available(lua_State * State)
 }
 
 // Lua param:
+// string Portname, number count = 1
+// Reads a certain amount from buffer
+int CLuaSerial::Lua_Read(lua_State * State)
+{
+	std::string _portname = lua_tostring(State, 1);
+
+	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+
+		size_t _Length = 0;
+
+		ioctl(_P->m_PortReference, FIONREAD, &_Length);
+
+		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
+		_P->m_IsFreed = false;
+
+		if (read(_P->m_PortReference, _P->m_FreeBuffer, _Length) != _Length)
+		{
+			PRINT_WARNING("Read on %s failed!\n", _portname);
+			return 0;
+		}
+
+		_P->m_LastAvailable = 0;
+
+		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
+
+		return 1;
+	}
+	return 0;
+}
+
+// Lua param:
 // string Portname
 // Read all currently available data; Returns string
 int CLuaSerial::Lua_ReadAll(lua_State * State)
