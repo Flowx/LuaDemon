@@ -5,6 +5,8 @@
 CLuaSerialPort::CLuaSerialPort(const char * Name)
 {
 	m_Name = Name;
+	m_FreeBuffer = NULL;
+	m_IsFreed = true;
 }
 
 

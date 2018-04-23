@@ -20,7 +20,7 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 
 	//size_t _k = 0;
 
-	lua_newtable(State);
+	//lua_newtable(State);
 
 	//for (int i = 0; i <= 0xFF; i++)
 	//{
@@ -34,7 +34,7 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 	//	}
 	//}
 
-	return 1;
+	return 0;
 }
 
 // Lua param:
@@ -188,7 +188,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 		if(read(_P->m_PortReference, _P->m_FreeBuffer, _Length) != _Length )
 		{
-			PRINT_WARNING("Read on %s failed!\n", _portname);
+			PRINT_WARNING("Read on %s failed!\n", _portname.c_str());
 			return 0;
 		}
 
@@ -206,13 +206,14 @@ void CLuaSerial::PollFunctions()
 	for (std::pair<std::string, CLuaSerialPort*> _v : m_PortList)
 	{
 		CLuaSerialPort * Port = _v.second;
-
+		
 		// TODO: Add ioctl to check if file descriptor is valid
 		//if (Port->m_PortReference == INVALID_HANDLE_VALUE)
 		//{
 		//	PRINT_DEBUG("Port %s has invalid Handle\n", Port->m_Name.c_str());
 		//	continue;
 		//}
+
 
 		if (!Port->m_IsFreed && Port->m_FreeBuffer != 0) // This deletes the buffer created by ReadAll()
 		{
