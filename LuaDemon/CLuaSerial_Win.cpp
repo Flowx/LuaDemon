@@ -43,6 +43,7 @@ int CLuaSerial::Lua_Discover(lua_State * State)
 // Opens a new COM Port
 int CLuaSerial::Lua_Open(lua_State * State) 
 {
+	if (lua_isnil(State, 1)) return 0;
 	std::string _portname = lua_tostring(State, 1);
 
 	if (_portname.empty()) return 0;
@@ -110,6 +111,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 // TODO: FINISH IT!!!!
 int CLuaSerial::Lua_Send(lua_State * State)
 {
+	if (lua_isnil(State, 1)) return 0;
 	std::string _portname = lua_tostring(State, 1);
 
 	if (_portname.empty()) return 0;
@@ -124,9 +126,16 @@ int CLuaSerial::Lua_Send(lua_State * State)
 
 	if (_hSerial == INVALID_HANDLE_VALUE) return 0;
 
-	char _databyte = (char)lua_tointeger(State, 2);
+	if (lua_isstring(State, 2))
+	{
 
-	int a = WriteFile(_hSerial, &_databyte, 1, 0, 0);
+		size_t _l = lua_strlen(State, 2);
+		if (_l == 0) return 0;
+
+		const char * _data = lua_tostring(State, 2);
+
+		int a = WriteFile(_hSerial, _data, _l, 0, 0);
+	}
 
 	return 0;
 }
@@ -136,6 +145,7 @@ int CLuaSerial::Lua_Send(lua_State * State)
 // Returns available data (in bytes) ready to be read
 int CLuaSerial::Lua_Available(lua_State * State)
 {
+	if (lua_isnil(State, 1)) return 0;
 	std::string _portname = lua_tostring(State, 1);
 
 	if (_portname.empty()) return 0;
@@ -156,10 +166,41 @@ int CLuaSerial::Lua_Available(lua_State * State)
 }
 
 // Lua param:
+// string Portname, number count = 1
+// Reads a certain amount; Will block until enough data arrives
+int CLuaSerial::Lua_Read(lua_State * State)
+{
+	if (lua_isnil(State, 1)) return 0;
+	std::string _portname = lua_tostring(State, 1);
+
+	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
+	{
+		CLuaSerialPort *_P = m_PortList[_portname];
+
+		size_t _Length = lua_tonumber(State, 2); // tonumber handles nil values
+		if (_Length < 1) return 0;
+
+		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
+
+		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, _Length, 0, 0);
+
+		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
+
+		_P->m_IsFreed = false;
+
+		_P->m_LastAvailable = 0;
+
+		return 1;
+	}
+	return 0;
+}
+
+// Lua param:
 // string Portname
 // Read all currently available data; Returns string
 int CLuaSerial::Lua_ReadAll(lua_State * State)
 {
+	if (lua_isnil(State, 1)) return 0;
 	std::string _portname = lua_tostring(State, 1);
 
 	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
@@ -170,6 +211,12 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 		ClearCommError(_P->m_PortReference, 0, &_Stat);
 
 		size_t _Length = _Stat.cbInQue;
+
+		if (_P->m_FreeBuffer != 0)
+		{
+			PRINT_ERROR("");
+			return 0;
+		}
 
 		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
 

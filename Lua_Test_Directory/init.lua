@@ -8,60 +8,28 @@ print("Test! System: " .. _LUAENV.ENVSYS)
 
 
 
-local ports = serial.Discover()
-for k,v in pairs(ports) do
-	print("Port: "..v)
-end
+serial.Open("COM4", 115200)
 
-local PORT_A = _LUAENV.ENVSYS == "LINUX" and "ttyS0" or "COM1"
-serial.Open(PORT_A, 9600)
-serial.Receive(PORT_A, function(Data)
-	--print("got something\n")
-	local a = serial.ReadAll(PORT_A)
-	--a = nil
-	print(type(a))
-	print("Data: " .. a)
+local a = "E"
+
+serial.Send("COM4", a)
+
+
+
+local out = serial.ReadAll("COM4")
+print(out)
+
+local dayta = serial.Read("COM4")
+
+local count = 0
+
+serial.Receive("COM4", function()
+	count = count + 1
+	local out = serial.ReadAll("COM4")
+	print(out)
+
+	serial.Send("COM4", "nignog")
+	if(count > 1000) then count = -10 end
 end)
 
-local activeports = serial.ListOpen()
-print(activeports)
-for k,v in pairs(activeports) do
-	print("Active: "..v)
-end
 
-
--- print(serial)
--- serial.Open(PORT_B, 9600)
--- -- serial.Receive(PORT_B, function(Data)
-	-- -- --print("got something else a\n")
-	-- -- print("Data: " .. serial.ReadAll(PORT_B))
--- -- end)
--- serial.Receive(PORT_B)
-
-do -- Test delay
-	local count = 0
-	while true do
-		serial.Send(PORT_A, 65)
-		-- serial.Send(PORT_B, 66)
-		for i=1,1000000 do local a = {} end
-		
-		-- print("Available A: " .. serial.Available(PORT_A))
-		-- print("Data: " .. serial.ReadAll(PORT_A))
-		-- print("Available B: " .. serial.Available(PORT_B))
-		-- print("Data: " .. serial.ReadAll(PORT_B))
-		
-		serial.Send(PORT_A, 66)
-		-- serial.Send(PORT_B, 65)
-		for i=1,1000000 do local a = {} end
-		
-		print("Available A: " .. serial.Available(PORT_A))
-		print("Data: " .. serial.ReadAll(PORT_A))
-		-- print("Available B: " .. serial.Available(PORT_B))
-		-- print("Data: " .. serial.ReadAll(PORT_))
-		
-		print("\nCount: " .. count)
-		
-		count = count + 1
-		if count == 18 then break end
-	end
-end

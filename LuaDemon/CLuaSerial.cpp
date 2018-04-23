@@ -74,6 +74,9 @@ void CLuaSerial::PushFunctions()
 	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_Available);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "Available");
 
+	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_Read);
+	lua_setfield(CLuaEnvironment::_LuaState, -2, "Read");
+
 	lua_pushcfunction(CLuaEnvironment::_LuaState, Lua_ReadAll);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "ReadAll");
 
