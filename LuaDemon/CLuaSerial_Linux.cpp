@@ -1,5 +1,3 @@
-#if !_WIN32 // ignore this file on linux
-
 #include "CLuaSerial.h"
 #include "PlatformCompatibility.h"
 #include <termios.h>
@@ -134,11 +132,17 @@ int CLuaSerial::Lua_Send(lua_State * State)
 	}
 	else return 0;
 
-	//if (_file == INVALID_HANDLE_VALUE) return 0;
-
 	char _databyte = (char)lua_tointeger(State, 2);
 
-	int a = write(_file, &_databyte, 1);
+	if (lua_isstring(State, 2))
+	{
+		size_t _l = lua_strlen(State, 2);
+		if (_l == 0) return 0;
+
+		const char * _data = lua_tostring(State, 2);
+
+		write(_file, _data, _l);
+	}
 
 	return 0;
 }
@@ -275,5 +279,3 @@ void CLuaSerial::PollFunctions()
 		}
 	}
 }
-
-#endif

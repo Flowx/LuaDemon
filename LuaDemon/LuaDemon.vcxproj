@@ -58,6 +58,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -69,6 +70,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -80,9 +82,18 @@
     <ClCompile Include="CLuaLib.cpp" />
     <ClCompile Include="CLuaNet.cpp" />
     <ClCompile Include="CLuaSerial.cpp" />
-    <ClCompile Include="CLuaSerial_Linux.cpp" />
+    <ClCompile Include="CLuaSerial_Linux.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="CLuaStdLib.cpp" />
-    <ClCompile Include="FileSpy.cpp" />
+    <ClCompile Include="FileSpy_Linux.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|x64'">true</ExcludedFromBuild>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">Level4</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Default|x64'">Level4</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="FileSpy_Win.cpp" />
     <ClCompile Include="CLuaSerial_Win.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlatformCompatibility.cpp" />

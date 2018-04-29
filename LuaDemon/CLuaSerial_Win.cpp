@@ -128,7 +128,6 @@ int CLuaSerial::Lua_Send(lua_State * State)
 
 	if (lua_isstring(State, 2))
 	{
-
 		size_t _l = lua_strlen(State, 2);
 		if (_l == 0) return 0;
 

@@ -1,13 +1,18 @@
-#include <stdio.h>
 #include "CLuaEnvironment.h"
 #include "PlatformCompatibility.h"
 #include "Lua/lua.hpp"
+//#include <string>
+#include <stdio.h>
 
 using namespace std;
+
+int CLuaEnvironment::_FileSpyInterval; //c++ linkers are horrible
 
 static bool __nofilespy = false;
 int main(int argc, const char ** args)
 {
+	CLuaEnvironment::_FileSpyInterval = 0;
+
 #pragma region Command line argument parser
 	for (int i = 0; i < argc; i++)
 	{
@@ -15,8 +20,9 @@ int main(int argc, const char ** args)
 
 		if (targ == "-h" || targ == "--help")
 		{
-			PRINT_DEBUG("-dir <directory>\t = Sets the root directory for the Lua environment\n\tDirectory must be readable by the process.\n\tDirectory must end with /\n\tDirectory must contain an \'%s\'.\n", LUAENV_INDEXFILE);
-			PRINT_DEBUG("-nofilespy\t = Disables automatic reloading on Lua file changes.");
+			PRINT_DEBUG("-dir <directory>\t = Sets the root directory for the Lua environment.\n\tDirectory must be readable by the process.\n\tDirectory must end with /\n\tDirectory must contain an \'%s\'.\n\n", LUAENV_INDEXFILE);
+			PRINT_DEBUG("-filespyinterval <interval>\t = Linux only. Interval is in milliseconds.\n\tAllows periodic checking of files by comparing last change.\n\tResource intensive - Use for debug only!\n\n");
+			PRINT_DEBUG("-nofilespy\t = Disables automatic reloading on Lua file changes.\n\n");
 			PRINT_DEBUG("-nodebug\t = Hides debug (cyan-colored) messages.");
 			return 0;
 		}
@@ -48,6 +54,13 @@ int main(int argc, const char ** args)
 			CLuaEnvironment::_Directory = args[i + 1];
 			PRINT_SUCCESS("Acquired valid directory \"%s\"!\n", args[i + 1]);
 			i++; // skip the argument for -dir
+		}
+		else if (targ == "-filespyinterval") // Allows periodical checking of files on Linux
+		{
+			if (argc < i + 2) // checks if an interval is specified, defaults to 500ms
+				CLuaEnvironment::_FileSpyInterval = 500;
+			else 
+				CLuaEnvironment::_FileSpyInterval = strtol(args[i + 1], nullptr, 0);
 		}
 		else if (targ == "-nofilespy")
 			__nofilespy = true;

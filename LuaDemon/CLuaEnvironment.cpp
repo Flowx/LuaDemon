@@ -10,6 +10,7 @@ lua_State * CLuaEnvironment::_LuaState;
 std::thread CLuaEnvironment::_FileThread;
 #pragma endregion
 
+
 void CLuaEnvironment::PushEnvTable()
 {
 	lua_newtable(_LuaState);

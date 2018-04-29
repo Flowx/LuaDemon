@@ -14,6 +14,7 @@ public:
 	static std::string _Directory;
 
 	static std::thread _FileThread;
+	static int _FileSpyInterval;
 	static void FileSpy(); // directory watchdog - refreshes Lua state on file change
 
 	static void Cycle(); // poll function called every 10us; Paused during initialization
