@@ -48,9 +48,9 @@ int CLuaSerial::Lua_Open(lua_State * State)
 
 	if (_portname.empty()) return 0;
 
-	size_t _portspeed = lua_tointeger(State, 2);
-	char _bytesize = lua_tointeger(State, 3);
-	char _stopbits = lua_tointeger(State, 4);
+	short _portspeed = (short)lua_tointeger(State, 2);
+	char _bytesize = (char)lua_tointeger(State, 3);
+	char _stopbits = (char)lua_tointeger(State, 4);
 
 	if (!_portspeed) _portspeed = 9600;
 	if (!_bytesize) _bytesize = 8;
@@ -62,6 +62,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 		CloseHandle(_P->m_PortReference);
 		delete _P;
 		m_PortList.erase(_portname);
+		PRINT_DEBUG("Closed existing port %s\n", _portname.c_str());
 	}
 
 	std::string buff = ("\\\\.\\" + _portname);
@@ -133,7 +134,7 @@ int CLuaSerial::Lua_Send(lua_State * State)
 
 		const char * _data = lua_tostring(State, 2);
 
-		int a = WriteFile(_hSerial, _data, _l, 0, 0);
+		WriteFile(_hSerial, _data, (DWORD)_l, 0, 0);
 	}
 
 	return 0;
@@ -176,14 +177,14 @@ int CLuaSerial::Lua_Read(lua_State * State)
 	{
 		CLuaSerialPort *_P = m_PortList[_portname];
 
-		size_t _Length = lua_tonumber(State, 2); // tonumber handles nil values
+		size_t _Length = (size_t)lua_tonumber(State, 2); // tonumber handles nil values
 		if (_Length < 1) return 0;
 
 		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
 
-		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, _Length, 0, 0);
+		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, (DWORD)_Length, 0, 0);
 
-		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
+		lua_pushlstring(State, _P->m_FreeBuffer, (DWORD)_Length);
 
 		_P->m_IsFreed = false;
 
@@ -219,7 +220,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 		_P->m_FreeBuffer = new (std::nothrow) char[_Length];
 
-		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, _Length, 0, 0);
+		ReadFile(_P->m_PortReference, _P->m_FreeBuffer, (DWORD)_Length, 0, 0);
 
 		lua_pushlstring(State, _P->m_FreeBuffer, _Length);
 

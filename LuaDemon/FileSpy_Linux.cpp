@@ -62,8 +62,6 @@ long GetLastModifiedTimestamp(std::string dir)
 			long _t = attrib.st_ctime;
 			if (_t > _last) _last = _t;
 		}
-
-		//_DirectoryList.push_back(std::string(dir + _tmp + '/'));
 	}
 	closedir(dp);
 

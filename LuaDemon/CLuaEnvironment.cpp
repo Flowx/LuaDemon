@@ -28,23 +28,10 @@ void CLuaEnvironment::PushEnvTable()
 	lua_setglobal(_LuaState, "_LUAENV");
 }
 
-void CLuaEnvironment::PushEnvFuncs()
-{
-	// includes another Lua file and runs it.
-	lua_pushcfunction(_LuaState, CLuaStdLib::Lua_include );
-	lua_setglobal(_LuaState, "include");
-
-	// forces the Lua environment to reload.
-	lua_pushcfunction(_LuaState, CLuaStdLib::Lua_forceReload); 
-	lua_setglobal(_LuaState, "forceReload");
-}
-
 void CLuaEnvironment::Cycle()
 {
 	// This runs in the main thread.
-	PushEnvTable();
-	PushEnvFuncs();
-
+	PushEnvTable(); // collection of useful data in a global table
 	PushLibraries();
 
 	_FileChange = true; // loading for the first time

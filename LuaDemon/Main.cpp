@@ -95,8 +95,7 @@ int main(int argc, const char ** args)
 		return 1;
 	}
 
-	luaopen_base(CLuaEnvironment::_LuaState);
-	luaopen_debug(CLuaEnvironment::_LuaState);
+	luaL_openlibs(CLuaEnvironment::_LuaState); // opens all libraries
 
 #pragma endregion
 

@@ -55,9 +55,10 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	if (m_PortList.count(_portname) > 0) // there is already a Lua serial port on this port
 	{
 		CLuaSerialPort *_P = m_PortList[_portname];
-		// NOTE: Close file handle
+		close(_P->m_PortReference);
 		delete _P;
 		m_PortList.erase(_portname);
+		PRINT_DEBUG("Closed existing port %s\n", _portname.c_str());
 	}
 
 	std::string buff = ("/dev/" + _portname); // NOTE: This provides access to everything in dev/ --- Is this a security issue?
@@ -65,7 +66,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	int fd = open(buff.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1)
 	{
-		PRINT_DEBUG("Failed to open port %s (Missing permissions?)\n", _portname.c_str());
+		PRINT_WARNING("Failed to open port %s (Missing permissions?)\n", _portname.c_str());
 		lua_pushboolean(State, 0);
 		return 1;
 	}
@@ -245,12 +246,6 @@ void CLuaSerial::PollFunctions()
 		CLuaSerialPort * Port = _v.second;
 		
 		// TODO: Add ioctl to check if file descriptor is valid
-		//if (Port->m_PortReference == INVALID_HANDLE_VALUE)
-		//{
-		//	PRINT_DEBUG("Port %s has invalid Handle\n", Port->m_Name.c_str());
-		//	continue;
-		//}
-
 
 		if (!Port->m_IsFreed && Port->m_FreeBuffer != 0) // This deletes the buffer created by ReadAll()
 		{

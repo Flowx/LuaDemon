@@ -28,6 +28,18 @@
     <Filter Include="Header Files\Libraries">
       <UniqueIdentifier>{fc5fbb44-a7ce-4927-a694-dd995d49ccac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Libraries\Net">
+      <UniqueIdentifier>{586824cb-eb3b-4698-9af7-9ef7a1a513be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Libraries\Serial">
+      <UniqueIdentifier>{e426682c-07ed-4742-9efe-f2b31f67888e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Libraries\Std">
+      <UniqueIdentifier>{669eb718-610b-483d-8207-0d7652520ef4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Libraries\File">
+      <UniqueIdentifier>{5c50603f-a57a-4d14-9048-99c7648f923f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -45,26 +57,35 @@
     <ClCompile Include="LibraryLinks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaNet.cpp">
-      <Filter>Source Files\Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaSerial.cpp">
-      <Filter>Source Files\Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaSerial_Win.cpp">
-      <Filter>Source Files\Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaStdLib.cpp">
-      <Filter>Source Files\Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaSerial_Linux.cpp">
-      <Filter>Source Files\Libraries</Filter>
-    </ClCompile>
     <ClCompile Include="FileSpy_Win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSpy_Linux.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaNet.cpp">
+      <Filter>Source Files\Libraries\Net</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaNet_Win.cpp">
+      <Filter>Source Files\Libraries\Net</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaSerial.cpp">
+      <Filter>Source Files\Libraries\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaSerial_Linux.cpp">
+      <Filter>Source Files\Libraries\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaSerial_Win.cpp">
+      <Filter>Source Files\Libraries\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaStdLib.cpp">
+      <Filter>Source Files\Libraries\Std</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaFile.cpp">
+      <Filter>Source Files\Libraries\File</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaNet_Linux.cpp">
+      <Filter>Source Files\Libraries\Net</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +123,9 @@
       <Filter>Header Files\Libraries</Filter>
     </ClInclude>
     <ClInclude Include="CLuaSerial.h">
+      <Filter>Header Files\Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaFile.h">
       <Filter>Header Files\Libraries</Filter>
     </ClInclude>
   </ItemGroup>

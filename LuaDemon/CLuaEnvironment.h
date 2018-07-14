@@ -26,8 +26,7 @@ public:
 	static void LoadLibraries();
 
 	static void PushEnvTable();
-	static void PushEnvFuncs();
-
+	
 	// Flag states
 	static volatile int  _Error; // If not 0 an error occured during initialization; Contains Lua error codes!
 	static volatile bool _Initialized; // Set when the Lua State has finished its initialization run (also set when a reload is completed)

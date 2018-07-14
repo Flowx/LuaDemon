@@ -56,7 +56,6 @@ int CLuaSerial::Lua_ListOpen(lua_State * State)
 }
 
 
-
 void CLuaSerial::PushFunctions()
 {
 	lua_newtable(CLuaEnvironment::_LuaState);
@@ -90,4 +89,16 @@ void CLuaSerial::PushFunctions()
 
 void CLuaSerial::LoadFunctions()
 {
+	// Closes all open ports
+	for (auto const& _v : m_PortList)
+	{
+		CLuaSerialPort *_P = _v.second;
+	#if _WIN32 // ignore this file on linux
+		CloseHandle(_P->m_PortReference);
+	#else
+		close(_P->m_PortReference);
+	#endif
+		delete _P;
+	}
+	m_PortList.clear();
 }
