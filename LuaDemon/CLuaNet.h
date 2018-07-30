@@ -3,17 +3,36 @@
 #include "CLuaEnvironment.h"
 #include <list>
 
+#if _WIN32
+	//#include <WinSock2.h>
+#else
+	#include<arpa/inet.h>
+#endif
 
-class CLuaNetSocket
+class CLuaNetConnection // TCP only
 {
 public:
-	CLuaNetSocket(int Socket);
-	
-	unsigned short m_IPPort = 0;
-
-
-	int m_Socket;
+	CLuaNetConnection(unsigned int Socket);
+	unsigned int	m_Socket; // Connection Socket reference
+	unsigned int	m_RemoteIP; // the clients IP address
 };
+
+
+
+class CLuaNetSocket // may be UDP or TCP
+{
+public:
+	CLuaNetSocket(unsigned int Socket);
+	unsigned long	m_ID; // reference ID for internal handling
+	unsigned short	m_IPPort = 0; // Port number
+	unsigned int	m_Socket; // Socket reference
+	int				m_LuaReference; // Reference to Lua function
+
+	static unsigned long m_Counter; // incremental counter, prevents accidental re-referencing; This is also the identifier passed to Lua
+	static unsigned long getID();
+};
+
+
 
 class CLuaNet
 {
@@ -26,6 +45,7 @@ public:
 	static bool m_Init;
 
 	static std::list<CLuaNetSocket *> m_UDPSockets;
+	static std::list<CLuaNetSocket *> m_TCPSockets; // listening sockets; NOT connections!
 
 	static void PushFunctions();
 	static void PollFunctions();

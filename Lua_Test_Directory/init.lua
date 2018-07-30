@@ -24,15 +24,71 @@ for k,v in pairs(data) do
 	data[k] = string.char(v)
 end
 
+
+
 local buff = table.concat(data)
 
---net.dumpUDP("10.0.0.255", 60377, buff)
+net.dumpUDP("10.0.0.8", 64394, buff)
 
 -- local s = net.connect("10.0.0.8", 62770)
 -- print(s)
 
-net.openUDP(666)
+net.openUDP(1666, function()
+	print("call udp!")
+end)
 
+
+local s = 0
+s = net.openTCP(1686, 5, function()
+	print("call tcp!")
+end)
+print(s)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- net.openUDP(696, function()
+	-- print("call 2!")
+-- end)
 
 
 

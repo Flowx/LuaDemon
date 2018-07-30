@@ -49,16 +49,72 @@ bool initWSA()
 }
 
 // Lua param:
-// short Port, func Callback
+// short Port, int Backlog, func Callback, bool Reuse
 // Opens a receiving socket
 // Callback: Called when a new connection is initiated
 int CLuaNet::Lua_openTCPSocket(lua_State * State)
 {
-	return 0;
+	if (!initWSA()) return 0;
+
+	unsigned short IP_Port = (unsigned short)lua_tointeger(State, 1);
+	int SocketBacklog = lua_tointeger(State, 2);
+	if (SocketBacklog < 0) SocketBacklog = 1;
+
+	for (auto _s : CLuaNet::m_TCPSockets)
+	{
+		if (_s->m_IPPort == IP_Port)
+		{
+			PRINT_DEBUG("CLuaNet: Removed old TCP socket! (%d)\n", _s->m_IPPort);
+			if (closesocket(_s->m_Socket) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+			delete _s;
+		}
+	}
+
+	sockaddr_in server;
+	memset((char *)&server, 0, sizeof(server));
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port = htons(IP_Port);
+
+	SOCKET s;
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == SOCKET_ERROR)
+	{
+		PRINT_ERROR("ERROR: socket() failed with error code : %d\n", WSAGetLastError());
+		return 0;
+	}
+
+	if (bind(s, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
+	{
+		PRINT_ERROR("ERROR: bind() failed with error code : %d\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+		return 0;
+	}
+
+	unsigned long NonBlock = 1; // used in polling mode; allows using only one thread for all ports
+	if (ioctlsocket(s, FIONBIO, &NonBlock) == SOCKET_ERROR)
+	{
+		PRINT_ERROR("ERROR: ioctlsocket() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+		return 0;
+	}
+
+	if (listen(s, SocketBacklog) == SOCKET_ERROR) // open the socket for connections
+	{
+		PRINT_ERROR("ERROR: listen() with error code : %d\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+		return 0;
+	}
+
+	CLuaNetSocket * _luasock = new CLuaNetSocket(s);
+	_luasock->m_IPPort = IP_Port;
+	CLuaNet::m_TCPSockets.push_front(_luasock); // add it to the list
+
+	lua_pushinteger(State, _luasock->m_ID);
+	return 1;
 }
 
 // Lua param:
-// short Port, func Callback
+// short Port, func Callback, bool Reuse
 // Opens a receiving socket
 // Callback: Called when a packet is received
 int CLuaNet::Lua_openUDPSocket(lua_State * State)
@@ -73,6 +129,24 @@ int CLuaNet::Lua_openUDPSocket(lua_State * State)
 
 	bool noReuse = (bool)lua_toboolean(State, 3);
 
+	if(!noReuse)
+	{
+		for (auto _s : CLuaNet::m_UDPSockets)
+		{
+			if (_s->m_IPPort == IP_Port)
+			{
+				PRINT_DEBUG("CLuaNet: Removed old hook!\n");
+				luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaReference); 
+
+				// reuse the existing socket and only attach the new function
+				// function has to be last argument or this will create a wrong reference
+				_s->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
+
+				lua_pushboolean(State, 1);
+				return 1;
+			}
+		}
+	}
 
 	sockaddr_in server;
 	memset((char *)&server, 0, sizeof(server));
@@ -89,12 +163,12 @@ int CLuaNet::Lua_openUDPSocket(lua_State * State)
 
 	if (bind(s, (sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
 	{
-		PRINT_ERROR("ERROR: bind() failed with error code : %d\n", WSAGetLastError());
-		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
+		PRINT_ERROR("ERROR: bind() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
 		return 0;
 	}
 
-	unsigned long NonBlock = 1; // used in polling mode; allows using only one thread
+	unsigned long NonBlock = 1; // used in polling mode; allows using only one thread for all ports
 	if (ioctlsocket(s, FIONBIO, &NonBlock) == SOCKET_ERROR)
 	{
 		PRINT_ERROR("ERROR: ioctlsocket() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
@@ -105,37 +179,12 @@ int CLuaNet::Lua_openUDPSocket(lua_State * State)
 
 	//most of the input and error handling is already done by WSA
 	
-	CLuaNetSocket _luasock(s);
-	_luasock.m_IPPort = IP_Port;
+	CLuaNetSocket * _luasock = new CLuaNetSocket(s);
+	_luasock->m_IPPort = IP_Port;
+	CLuaNet::m_UDPSockets.push_front(_luasock); // add it to the list
 
-	CLuaNet::m_UDPSockets.push_front(&_luasock); // add it to the list
-
-
-
-	//char buf[4096];
-	//memset(buf, '\0', 4096);
-
-	//struct sockaddr_in si_other;
-	//int slen = sizeof(si_other), recv_len = 0;
-
-	//while(true) {
-	//	if ((recv_len = recvfrom(s, buf, 4096, 0, (struct sockaddr *) &si_other, &slen)) == SOCKET_ERROR)
-	//	{
-	//		int _err = WSAGetLastError();
-	//		if (_err == 10035) continue; // ignore, caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
-	//		PRINT_ERROR("ERROR: recvfrom() failed with error code : %d\n", _err);
-	//		return 0;
-	//	}
-	//	else // we received actual data
-	//	{
-	//		PRINT_DEBUG("Received something!\n", WSAGetLastError());
-	//		//break;
-	//	}
-
-	//	
-	//}
-
-	return 0;
+	lua_pushinteger(State, _luasock->m_ID);
+	return 1;
 }
 
 // Lua param:
@@ -216,12 +265,52 @@ int CLuaNet::Lua_dumpUDP(lua_State * State)
 
 	if(res != SOCKET_ERROR)
 	{
-		lua_pushboolean(State, TRUE);
+		lua_pushboolean(State, 1);
 		return 1;
 	} 
 	else PRINT_ERROR("ERROR: sendto() failed with error code : %d\n", WSAGetLastError());
 
 	return 0;
+}
+
+
+
+void CLuaNet::PollFunctions()
+{
+	char buf[4096]; // 4kB receive buffer
+	for (auto  _s : CLuaNet::m_UDPSockets)
+	{
+		memset(buf, '\0', 4096); // clear the buffer
+
+		struct sockaddr_in client;
+		int slen = sizeof(client), recv_len = 0;
+
+		if ((recv_len = recvfrom((SOCKET)_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &slen)) == SOCKET_ERROR)
+		{
+			int _err = WSAGetLastError();
+			if (_err == 10035) continue; // ignore - caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
+			PRINT_ERROR("ERROR: recvfrom() failed with error code : %d\n", _err);
+		}
+		else // we received actual data
+		{
+			unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
+			PRINT_DEBUG("Received something from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]);
+		}
+	}
+
+	for (auto _s : CLuaNet::m_TCPSockets) // this only accepts connections and returns new sockets
+	{
+		struct sockaddr_in client;
+		int slen = sizeof(client);
+
+		SOCKET connector = accept((SOCKET)_s->m_Socket, (struct sockaddr *) &client, &slen);
+		if (connector != INVALID_SOCKET)
+		{
+			unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
+			PRINT_DEBUG("Connection incoming from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]); // TODO: Do this properly; Endianess!!!
+			//closesocket(connector);
+		}
+	}
 }
 
 

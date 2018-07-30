@@ -45,6 +45,7 @@ void CLuaEnvironment::Cycle()
 			_FileChange = false;
 			LoadLua();
 		}
+		
 		PollLibraries();
 	}
 }
@@ -58,7 +59,6 @@ void CLuaEnvironment::LoadLua()
 	std::string buffer = _Directory + LUAENV_INDEXFILE;
 
 	_Error = luaL_loadfile(_LuaState, buffer.c_str()); // Load the entry point file
-
 	if (_Error)
 	{
 		PRINT_ERROR("ERROR: Lua failed to initialize: %s\n", lua_tostring(_LuaState, -1));

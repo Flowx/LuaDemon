@@ -26,7 +26,7 @@ int CLuaSerial::Lua_Receive(lua_State * State)
 
 		if (_P->m_LuaReference != 0) // there already is a function hooked to this port
 		{
-			PRINT_DEBUG("Removed old hook!\n");
+			PRINT_DEBUG("CLuaSerial: Removed old hook!\n");
 			luaL_unref(State, LUA_REGISTRYINDEX, _P->m_LuaReference);
 		}
 

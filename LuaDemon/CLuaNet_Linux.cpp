@@ -3,7 +3,7 @@
 #include<string.h>
 #include<arpa/inet.h>
 #include<sys/socket.h>
-
+#include<fcntl.h>
 
 // Lua param:
 // short Port, func Callback
@@ -20,7 +20,72 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 // Callback: Called when a packet is received
 int CLuaNet::Lua_openUDPSocket(lua_State * State)
 {
-	return 0;
+	unsigned short IP_Port = (unsigned short)lua_tointeger(State, 1);
+
+	if (!lua_isfunction(State, 2)) return 0;
+
+	bool noReuse = (bool)lua_toboolean(State, 3);
+
+	if (!noReuse)
+	{
+		for (auto _s : CLuaNet::m_UDPSockets)
+		{
+			if (_s->m_IPPort == IP_Port)
+			{
+				PRINT_DEBUG("CLuaNet: Removed old hook!\n");
+				luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaReference);
+
+				// reuse the existing socket and only attach the new function
+				// function has to be last argument or this will create a wrong reference
+				_s->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
+
+				lua_pushboolean(State, 1);
+				return 1;
+			}
+		}
+	}
+
+	
+	struct sockaddr_in server;
+	memset((char *)&server, 0, sizeof(server));
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port = htons(IP_Port);
+
+
+	unsigned int s;
+	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+	{
+		PRINT_ERROR("ERROR: socket() failed: %s", strerror(errno));
+		return 0;
+	}
+
+	//bind socket to port
+	if (bind(s, (struct sockaddr*)&server, sizeof(server)) == -1)
+	{
+		PRINT_ERROR("ERROR: bind() failed: %s\n\tTerminating Socket...\n", strerror(errno));
+		if (close(s) == -1) PRINT_ERROR("ERROR: closesocket() failed.\n");
+		return 0;
+	}
+
+	// prevent blocking
+	if (fcntl(s, F_SETFL, fcntl(s, F_GETFL) | O_NONBLOCK) == -1)
+	{
+		PRINT_ERROR("ERROR: fcntl() O_NONBLOCK failed: %s\n\tTerminating Socket...\n", strerror(errno));
+		if (close(s) == -1) PRINT_ERROR("ERROR: closesocket() failed.\n");
+		return 0;
+	}
+
+	// NOTE: Some error handling may be required on Linux
+
+	CLuaNetSocket * _luasock = new CLuaNetSocket(s);
+	_luasock->m_IPPort = IP_Port;
+	//_luasock.m_SockAddr = server;
+
+	CLuaNet::m_UDPSockets.push_front(_luasock); // add it to the list
+
+	lua_pushboolean(State, 1);
+	return 1;
 }
 
 // Lua param:
@@ -82,7 +147,31 @@ int CLuaNet::Lua_dumpUDP(lua_State * State)
 }
 
 
-#ifdef Opens UDP Socket on Linux
+void CLuaNet::PollFunctions()
+{
+	char buf[4096]; // 4kB receive buffer
+
+	for (auto _s : CLuaNet::m_UDPSockets)
+	{
+		memset(buf, '\0', 4096); // clear the buffer
+
+		struct sockaddr_in si_other;
+		int recv_len = 0;
+		unsigned int slen = sizeof(si_other);
+
+		if ((recv_len = recvfrom(_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+		{
+			if (errno == EWOULDBLOCK) continue; // ignore - caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
+			PRINT_ERROR("ERROR: recvfrom() failed: %s\n", strerror(errno));
+		}
+		else // we received actual data
+		{
+			PRINT_DEBUG("Received something!\n");
+		}
+	}
+}
+
+/*
 int CLuaNet::Lua_OpenUDP(lua_State * State)
 {
 	struct sockaddr_in _addr;
@@ -117,4 +206,4 @@ int CLuaNet::Lua_OpenUDP(lua_State * State)
 
 	return 1;
 }
-#endif
+*/

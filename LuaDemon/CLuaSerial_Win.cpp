@@ -102,7 +102,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 	CLuaSerial::m_PortList[_portname] = new CLuaSerialPort(_portname.c_str());
 	CLuaSerial::m_PortList[_portname]->m_PortReference = _comHandle;
 
-	lua_pushboolean(State, TRUE);
+	lua_pushboolean(State, 1);
 	return 1;
 }
 
