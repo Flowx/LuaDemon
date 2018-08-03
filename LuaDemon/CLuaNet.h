@@ -36,10 +36,10 @@ public:
 
 class CLuaNet
 {
-	static int Lua_openTCPSocket(lua_State * State);
-	static int Lua_openUDPSocket(lua_State * State);
-	static int Lua_connect(lua_State * State);
 	static int Lua_dumpUDP(lua_State * State); // shortcut to send a udp packet
+	static int Lua_openUDPSocket(lua_State * State);
+	static int Lua_openTCPSocket(lua_State * State);
+	static int Lua_connect(lua_State * State);
 	
 public:
 	static bool m_Init;

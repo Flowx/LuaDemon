@@ -266,7 +266,7 @@ void CLuaSerial::PollFunctions()
 			
 			if (lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0)) // Some error occured
 			{
-				PRINT_WARNING("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
 				lua_pop(CLuaEnvironment::_LuaState, 1);
 			}
 		}

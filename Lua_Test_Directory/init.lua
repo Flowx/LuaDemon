@@ -33,8 +33,10 @@ net.dumpUDP("10.0.0.8", 64394, buff)
 -- local s = net.connect("10.0.0.8", 62770)
 -- print(s)
 
-net.openUDP(1666, function()
+net.openUDP(1666, false, function(data, ip)
 	print("call udp!")
+	print("IP: " .. ip)
+	print("Data: " .. data)
 end)
 
 

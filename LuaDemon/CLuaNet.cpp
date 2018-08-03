@@ -34,17 +34,18 @@ void CLuaNet::PushFunctions()
 
 	lua_newtable(CLuaEnvironment::_LuaState);
 
-	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_openTCPSocket);
-	lua_setfield(CLuaEnvironment::_LuaState, -2, "openTCP");
+	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_dumpUDP);
+	lua_setfield(CLuaEnvironment::_LuaState, -2, "dumpUDP");
 
 	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_openUDPSocket);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "openUDP");
 
+	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_openTCPSocket);
+	lua_setfield(CLuaEnvironment::_LuaState, -2, "openTCP");
+
 	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_connect);
 	lua_setfield(CLuaEnvironment::_LuaState, -2, "connect");
 
-	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaNet::Lua_dumpUDP);
-	lua_setfield(CLuaEnvironment::_LuaState, -2, "dumpUDP");
 
 	lua_setglobal(CLuaEnvironment::_LuaState, "net");
 }
