@@ -302,8 +302,6 @@ void CLuaNet::PollFunctions()
 		}
 		else // we received actual data
 		{
-			unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
-			PRINT_DEBUG("Received something from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]);
 			
 			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
 
@@ -330,6 +328,18 @@ void CLuaNet::PollFunctions()
 		{
 			unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
 			PRINT_DEBUG("Connection incoming from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]); // TODO: Do this properly; Endianess!!!
+			
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
+
+			lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
+			
+			if (lua_pcall(CLuaEnvironment::_LuaState, 1, 1, 0)) // Some error occured
+			{
+				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				lua_pop(CLuaEnvironment::_LuaState, 1);
+			}
+			
+			bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
 			//closesocket(connector);
 		}
 	}
