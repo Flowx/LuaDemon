@@ -6,12 +6,10 @@ unsigned long CLuaNetSocket::m_Counter;
 std::list<CLuaNetSocket *> CLuaNet::m_UDPSockets;
 std::list<CLuaNetSocket *> CLuaNet::m_TCPSockets;
 
-CLuaNetConnection::CLuaNetConnection(unsigned int Socket)
+CLuaNetClient::CLuaNetClient(unsigned int Socket)
 {
 	m_Socket = Socket;
 }
-
-
 
 CLuaNetSocket::CLuaNetSocket(unsigned int Socket)
 {
@@ -23,6 +21,7 @@ unsigned long CLuaNetSocket::getID()
 {
 	if (m_Counter == 0) m_Counter = 1;
 	m_Counter += 1; // overflow should cause wrap around; unlikely with 4 billion sockets
+	if (m_Counter == 0xFFFF) m_Counter = 1;
 	return m_Counter;
 }
 

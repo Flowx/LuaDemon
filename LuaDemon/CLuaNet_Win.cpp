@@ -343,6 +343,11 @@ void CLuaNet::PollFunctions()
 			
 			bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
 			//closesocket(connector);
+
+
+			CLuaNetClient * _clientsock = new CLuaNetClient(connector);
+			_clientsock->m_RemoteIP = client.sin_addr.s_addr;
+			_s->m_Clients.push_front(_clientsock); // add it to the list
 		}
 	}
 }
