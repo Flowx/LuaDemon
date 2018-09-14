@@ -302,6 +302,8 @@ void CLuaNet::PollFunctions()
 		}
 		else // we received actual data
 		{
+			//unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
+			//PRINT_DEBUG("Received something from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]);
 			
 			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
 
