@@ -9,10 +9,10 @@
 	#include<arpa/inet.h>
 #endif
 
-class CLuaNetConnection // TCP only
+class CLuaNetClient // TCP only
 {
 public:
-	CLuaNetConnection(unsigned int Socket);
+	CLuaNetClient(unsigned int Socket);
 	unsigned int	m_Socket; // Connection Socket reference
 	unsigned int	m_RemoteIP; // the clients IP address
 };
@@ -27,6 +27,8 @@ public:
 	unsigned short	m_IPPort = 0; // Port number
 	unsigned int	m_Socket; // Socket reference
 	int				m_LuaReference; // Reference to Lua function
+
+	static std::list<CLuaNetClient *> m_Clients; // connected clients on that socket
 
 	static unsigned long m_Counter; // incremental counter, prevents accidental re-referencing; This is also the identifier passed to Lua
 	static unsigned long getID();
