@@ -41,7 +41,7 @@ local buff = table.concat(data)
 
 
 local s = 0
-s = net.openTCP(80, 5, function()
+s = net.openTCP(666, 5, function()
 	print("call tcp!")
 end)
 print(s)

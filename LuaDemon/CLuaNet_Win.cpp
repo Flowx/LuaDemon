@@ -191,8 +191,8 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 	if (!initWSA()) return 0;
 
 	unsigned short IP_Port = (unsigned short)lua_tointeger(State, 1);
-	int SocketBacklog = lua_tointeger(State, 2);
-	if (SocketBacklog < 0) SocketBacklog = 1;
+	//int SocketBacklog = lua_tointeger(State, 2);
+	//if (SocketBacklog < 0) SocketBacklog = 1;
 
 	for (auto _s : CLuaNet::m_TCPSockets)
 	{
@@ -201,6 +201,20 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 			PRINT_DEBUG("CLuaNet: Removed old TCP socket! (%d)\n", _s->m_IPPort);
 			if (closesocket(_s->m_Socket) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
 			delete _s;
+
+			//NOTE: Reusing TCP sockets doesnt sound like good idea for now
+
+			//if (_s->m_IPPort == IP_Port) // NOTE: This function only decides wheter to accept the connection
+			//{
+			//	PRINT_DEBUG("CLuaNet: Removed old hook!\n");
+			//	luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaReference);
+
+			//	// reuse the existing socket and only attach the new function
+			//	// function has to be last argument or this will create a wrong reference
+			//	_s->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
+
+			//	lua_pushboolean(State, 1);
+			//}
 		}
 	}
 
@@ -232,7 +246,8 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 		return 0;
 	}
 
-	if (listen(s, SocketBacklog) == SOCKET_ERROR) // open the socket for connections
+	//if (listen(s, SocketBacklog) == SOCKET_ERROR) // open the socket for connections
+	if (listen(s, 0) == SOCKET_ERROR) // open the socket for connections
 	{
 		PRINT_ERROR("ERROR: listen() with error code : %d\n", WSAGetLastError());
 		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
@@ -241,6 +256,7 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 
 	CLuaNetSocket * _luasock = new CLuaNetSocket(s);
 	_luasock->m_IPPort = IP_Port;
+	_luasock->m_LuaReference = 0;
 	CLuaNet::m_TCPSockets.push_front(_luasock); // add it to the list
 
 	lua_pushinteger(State, _luasock->m_ID);
@@ -331,18 +347,22 @@ void CLuaNet::PollFunctions()
 			unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
 			PRINT_DEBUG("Connection incoming from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]); // TODO: Do this properly; Endianess!!!
 			
+
+#pragma region Call Lua function
 			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
 
 			lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
-			
+
 			if (lua_pcall(CLuaEnvironment::_LuaState, 1, 1, 0)) // Some error occured
 			{
 				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
 				lua_pop(CLuaEnvironment::_LuaState, 1);
 			}
-			
+
 			bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
 			//closesocket(connector);
+#pragma endregion
+
 
 
 			CLuaNetClient * _clientsock = new CLuaNetClient(connector);

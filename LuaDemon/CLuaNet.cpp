@@ -5,6 +5,8 @@ bool CLuaNet::m_Init;
 unsigned long CLuaNetSocket::m_Counter;
 std::list<CLuaNetSocket *> CLuaNet::m_UDPSockets;
 std::list<CLuaNetSocket *> CLuaNet::m_TCPSockets;
+std::list<CLuaNetClient *> CLuaNetSocket::m_Clients;
+
 
 CLuaNetClient::CLuaNetClient(unsigned int Socket)
 {
