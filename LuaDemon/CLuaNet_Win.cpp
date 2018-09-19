@@ -348,26 +348,36 @@ void CLuaNet::PollFunctions()
 			PRINT_DEBUG("Connection incoming from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]); // TODO: Do this properly; Endianess!!!
 			
 
-#pragma region Call Lua function
-			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
-
-			lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
-
-			if (lua_pcall(CLuaEnvironment::_LuaState, 1, 1, 0)) // Some error occured
-			{
-				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
-				lua_pop(CLuaEnvironment::_LuaState, 1);
-			}
-
-			bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
-			//closesocket(connector);
-#pragma endregion
+//#pragma region Call Lua function
+//			if (_s->m_LuaReference != NULL) 
+//			{
+//				lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
+//
+//				lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
+//
+//				if (lua_pcall(CLuaEnvironment::_LuaState, 1, 1, 0)) // Some error occured
+//				{
+//					PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+//					lua_pop(CLuaEnvironment::_LuaState, 1);
+//				}
+//
+//				bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
+//			}
+//			//closesocket(connector);
+//#pragma endregion
 
 
 
 			CLuaNetClient * _clientsock = new CLuaNetClient(connector);
 			_clientsock->m_RemoteIP = client.sin_addr.s_addr;
 			_s->m_Clients.push_front(_clientsock); // add it to the list
+		}
+
+		// check for new data and call Lua
+		for (auto _c : _s->m_Clients)
+		{
+			SOCKET s = _c->m_Socket;
+			//iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
 		}
 	}
 }
