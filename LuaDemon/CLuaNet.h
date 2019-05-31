@@ -9,40 +9,46 @@
 	#include<arpa/inet.h>
 #endif
 
-class CLuaNetClient // TCP only
+class CLuaNet : CLuaLib
 {
 public:
-	CLuaNetClient(unsigned int Socket);
-	unsigned int	m_Socket; // Connection Socket reference
-	unsigned int	m_RemoteIP; // the clients IP address
-};
+
+	class CLuaNetClient // TCP only
+	{
+	public:
+		CLuaNetClient(unsigned int Socket);
+		unsigned int	m_Socket; // Connection Socket reference
+		unsigned int	m_RemoteIP; // the clients IP address
+	};
 
 
 
-class CLuaNetSocket // may be UDP or TCP
-{
-public:
-	CLuaNetSocket(unsigned int Socket);
-	unsigned long	m_ID; // reference ID for internal handling
-	unsigned short	m_IPPort = 0; // Port number
-	unsigned int	m_Socket; // Socket reference
-	int				m_LuaReference; // Reference to Lua function
-
-	static std::list<CLuaNetClient *> m_Clients; // connected clients on that socket
-
-	static unsigned long m_Counter; // incremental counter, prevents accidental re-referencing; This is also the identifier passed to Lua
-	static unsigned long getID();
-};
 
 
+	class CLuaNetSocket // may be UDP or TCP
+	{
+	public:
+		CLuaNetSocket(unsigned int Socket);
+		unsigned long	m_ID; // reference ID for internal handling
+		unsigned short	m_IPPort = 0; // Port number
+		unsigned int	m_Socket; // Socket reference
+				 int	m_LuaReference; // Reference to Lua function
 
-class CLuaNet
-{
+		static std::list<CLuaNetClient *> m_Clients; // connected clients on that socket
+
+		static unsigned long m_Counter; // incremental counter, prevents accidental re-referencing; This is also the identifier passed to Lua
+		static unsigned long getID();
+	};
+
+
+
+
+private:
 	static int Lua_dumpUDP(lua_State * State); // shortcut to send a udp packet
 	static int Lua_openUDPSocket(lua_State * State);
 	static int Lua_openTCPSocket(lua_State * State);
 	static int Lua_connect(lua_State * State);
-	
+
 public:
 	static bool m_Init;
 
@@ -53,4 +59,3 @@ public:
 	static void PollFunctions();
 	static void LoadFunctions();
 };
-

@@ -5,6 +5,7 @@
 
 #define LUAENV_INDEXFILE "init.lua"
 
+
 // Main class to contain the Lua State and functions to control it
 class CLuaEnvironment
 {

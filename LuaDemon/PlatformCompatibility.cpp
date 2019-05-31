@@ -5,7 +5,13 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-bool __nodebug = false;
+/*
+	PlatformCompatability.c
+
+	Provides functions to unfiy UNIX and Windows IO
+*/
+
+bool __nodebug = false; // False = supress debug messages to be printed
 
 #ifdef _WIN32 // Win32 console
 

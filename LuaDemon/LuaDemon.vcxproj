@@ -44,12 +44,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)</TargetName>
-    <OutDir>$(SolutionDir)Debug</OutDir>
-    <IntDir>Debug</IntDir>
+    <OutDir>$(SolutionDir)Debug/</OutDir>
+    <IntDir>Debug/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Default|x64'">
-    <OutDir>$(SolutionDir)Debug</OutDir>
-    <IntDir>Debug</IntDir>
+    <OutDir>$(SolutionDir)Debug/</OutDir>
+    <IntDir>Debug/</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">
     <ClCompile>
@@ -59,6 +59,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions) _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -71,6 +72,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions) _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -106,14 +108,6 @@
     <ClCompile Include="LibraryLinks.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Lua_Test_Directory\includeme.lua" />
-    <None Include="..\Lua_Test_Directory\init.lua" />
-    <None Include="Lua\lua51.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="Lua\lua51.lib" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CLuaEnvironment.h" />
     <ClInclude Include="CLuaFile.h" />
     <ClInclude Include="CLuaLib.h" />
@@ -127,9 +121,6 @@
     <ClInclude Include="Lua\luajit.h" />
     <ClInclude Include="Lua\lualib.h" />
     <ClInclude Include="PlatformCompatibility.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\Lua_Test_Directory\test.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

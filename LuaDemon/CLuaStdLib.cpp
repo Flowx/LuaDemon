@@ -41,10 +41,28 @@ int CLuaStdLib::Lua_include(lua_State *LState)
 	{
 		if (luaL_loadfile(LState, src.c_str()))
 		{
-			PRINT_WARNING("Something went wrong loading include file!\n");
+			PRINT_ERROR("ERROR: Lua failed to initialize: %s \n", lua_tostring(LState, -1));
+			lua_pop(LState, 1);
+
 			return 0;
 		}
-		else lua_pcall(LState, 0, 0, 0);
+		else
+		{
+			lua_call(LState, 0, 0); // dont pcall here, as it would hide any errors that may occur in an included file
+			// Any error thrown will be caught by the main pcall in CLuaEnvironment.
+			/*
+				if (!lua_pcall(LState, 0, 0, 0))
+				{
+					PRINT_DEBUG("Sucess pcall\n");
+				}
+				else
+				{
+					PRINT_ERROR("ERROR: Lua failed to pcall: %s \n", lua_tostring(LState, -1));
+					lua_pop(LState, 1);
+					return 0;
+				};
+			*/
+		}
 	}
 	else PRINT_WARNING("Include \"%s\" was not found\n", _file.c_str());
 

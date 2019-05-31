@@ -1,7 +1,8 @@
 #pragma once
 #include "Lua/lua.hpp"
+#include "CLuaLib.h"
 
-class CLuaStdLib
+class CLuaStdLib : CLuaLib
 {
 	static int Lua_include(lua_State * S);
 	static int Lua_forceReload(lua_State * S);
@@ -11,4 +12,3 @@ public:
 	static void PollFunctions();
 	static void LoadFunctions();
 };
-

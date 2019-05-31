@@ -2,7 +2,7 @@
 
 #include "PlatformCompatibility.h"
 
-CLuaSerialPort::CLuaSerialPort(const char * Name)
+CLuaSerial::CLuaSerialPort::CLuaSerialPort(const char * Name)
 {
 	m_Name = Name;
 	m_FreeBuffer = NULL;

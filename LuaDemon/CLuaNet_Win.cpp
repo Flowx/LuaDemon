@@ -87,7 +87,7 @@ int CLuaNet::Lua_dumpUDP(lua_State * State)
 		return 0;
 	}
 
-	int res = sendto(s, data, datalen, 0, (struct sockaddr *) &si_other, sizeof(si_other));
+	int res = sendto(s, data, (int)datalen, 0, (struct sockaddr *) &si_other, sizeof(si_other));
 
 	closesocket(s);
 
@@ -374,11 +374,11 @@ void CLuaNet::PollFunctions()
 		}
 
 		// check for new data and call Lua
-		for (auto _c : _s->m_Clients)
-		{
-			SOCKET s = _c->m_Socket;
-			//iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
-		}
+		//for (auto _c : _s->m_Clients)
+		//{
+		//	SOCKET s = _c->m_Socket;
+		//	//iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
+		//}
 	}
 }
 

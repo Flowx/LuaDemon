@@ -8,32 +8,35 @@
 #include <Windows.h>
 #endif
 
-class CLuaSerialPort
+class CLuaSerial : CLuaLib //: public CLuaLib
 {
 public:
-	CLuaSerialPort(const char * Name);
-	//~CLuaSerialPort();
 
-	std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
-	
-	unsigned long m_LastAvailable = 0;
+	class CLuaSerialPort
+	{
+	public:
+		CLuaSerialPort(const char * Name);
+		//~CLuaSerialPort();
 
-	char * m_FreeBuffer; // this buffer has to be freed after Read or ReadAll returns!
-	bool m_IsFreed;
+		std::string m_Name; // This is the port name; Typically COM1 on Windows or ttyS1 on Linux
 
-	int m_LuaReference;
+		unsigned long m_LastAvailable = 0;
+
+		char * m_FreeBuffer; // this buffer has to be freed after Read or ReadAll returns!
+		bool m_IsFreed;
+
+		int m_LuaReference;
 
 #if _WIN32 // a little messy but better than having everything twice
-	HANDLE m_PortReference; // Windows Handle
+		HANDLE m_PortReference; // Windows Handle
 #else
-	int m_PortReference; // Linux File Descriptor
+		int m_PortReference; // Linux File Descriptor
 #endif
 
 	//void operator delete(void *) {} // works but good luck with the memory leak
-};
+	};
 
-class CLuaSerial //: public CLuaLib
-{
+private:
 	static int Lua_Discover(lua_State * State);		//Args: none; Only works on Windows right now!
 	static int Lua_Open(lua_State * State);			//Args: string Port, string Name
 	static int Lua_Send(lua_State * State);			//Args: string Port, number Data (0-255)
@@ -50,6 +53,3 @@ public:
 	static void PollFunctions();
 	static void LoadFunctions();
 };
-
-
-

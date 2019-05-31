@@ -2,31 +2,30 @@
 
 // Linker ref
 bool CLuaNet::m_Init;
-unsigned long CLuaNetSocket::m_Counter;
-std::list<CLuaNetSocket *> CLuaNet::m_UDPSockets;
-std::list<CLuaNetSocket *> CLuaNet::m_TCPSockets;
-std::list<CLuaNetClient *> CLuaNetSocket::m_Clients;
+unsigned long CLuaNet::CLuaNetSocket::m_Counter;
+std::list<CLuaNet::CLuaNetSocket *> CLuaNet::m_UDPSockets;
+std::list<CLuaNet::CLuaNetSocket *> CLuaNet::m_TCPSockets;
+std::list<CLuaNet::CLuaNetClient *> CLuaNet::CLuaNetSocket::m_Clients;
 
 
-CLuaNetClient::CLuaNetClient(unsigned int Socket)
+CLuaNet::CLuaNetClient::CLuaNetClient(unsigned int Socket)
 {
 	m_Socket = Socket;
 }
 
-CLuaNetSocket::CLuaNetSocket(unsigned int Socket)
+CLuaNet::CLuaNetSocket::CLuaNetSocket(unsigned int Socket)
 {
 	m_Socket = Socket;
 	m_ID = getID();
 }
 
-unsigned long CLuaNetSocket::getID()
+unsigned long CLuaNet::CLuaNetSocket::getID()
 {
 	if (m_Counter == 0) m_Counter = 1;
 	m_Counter += 1; // overflow should cause wrap around; unlikely with 4 billion sockets
 	if (m_Counter == 0xFFFF) m_Counter = 1;
 	return m_Counter;
 }
-
 
 
 void CLuaNet::PushFunctions()
