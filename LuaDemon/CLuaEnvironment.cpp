@@ -56,7 +56,6 @@ void CLuaEnvironment::Cycle()
 
 /*
 	Main function that actually loads the Lua files.
-
 */
 void CLuaEnvironment::LoadLua()
 {

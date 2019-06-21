@@ -7,6 +7,7 @@ using namespace std;
 
 void CLuaStdLib::PushFunctions()
 {
+	// NOTE: May be dropped! Read header.
 	// includes another Lua file and runs it.
 	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaStdLib::Lua_include);
 	lua_setglobal(CLuaEnvironment::_LuaState, "include");
@@ -69,6 +70,9 @@ int CLuaStdLib::Lua_include(lua_State *LState)
 	return 0;
 }
 
+/*
+	forces the lua environment to reload
+*/
 int CLuaStdLib::Lua_forceReload(lua_State *LState)
 {
 	CLuaEnvironment::_FileChange = true;

@@ -8,8 +8,24 @@ print("Test: ".._TEST)
 print("Dir: " .. _LUAENV.ENVDIR)
 print("System: " .. _LUAENV.ENVSYS)
 
+
+--[[
+for k,v in pairs(_G) do
+	print(k,v)
+end
+]]
+
+
+
+include("jsonparser.lua")
+
 include("intellicon/init.lua")
+
+
+
+
 print("Done!")
+
 
 
 

@@ -76,11 +76,11 @@ int CLuaNet::Lua_openUDPSocket(lua_State * State)
 			if (_s->m_IPPort == IP_Port)
 			{
 				PRINT_DEBUG("CLuaNet: Removed old hook!\n");
-				luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaReference);
+				luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaOnData);
 
 				// reuse the existing socket and only attach the new function
 				// function has to be last argument or this will create a wrong reference
-				_s->m_LuaReference = luaL_ref(State, LUA_REGISTRYINDEX);
+				_s->m_LuaOnData = luaL_ref(State, LUA_REGISTRYINDEX);
 
 				lua_pushboolean(State, 1);
 				return 1;

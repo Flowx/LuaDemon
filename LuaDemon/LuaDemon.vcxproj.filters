@@ -116,4 +116,8 @@
       <Filter>Lua Libraries\Std</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Lua_Test_Directory\init.lua" />
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
 </Project>
