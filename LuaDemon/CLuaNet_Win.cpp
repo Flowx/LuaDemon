@@ -371,13 +371,31 @@ void CLuaNet::PollFunctions()
 			CLuaNetClient * _clientsock = new CLuaNetClient(connector);
 			_clientsock->m_RemoteIP = client.sin_addr.s_addr;
 			_s->m_Clients.push_front(_clientsock); // add it to the list
+			PRINT_DEBUG("Active connections on Port %i:   %i#\n", _s->m_IPPort, _s->m_Clients.size());
 		}
 
-		// check for new data and call Lua
+		// check for new data on this ports' clients
+		u_long _avail = 0;
 		for (auto _c : _s->m_Clients)
 		{
 			SOCKET s = _c->m_Socket;
-			//iResult = ioctlsocket(m_socket, FIONBIO, &iMode);
+			int iResult = ioctlsocket(s, FIONREAD, &_avail);
+			if (_avail)
+			{
+				PRINT_DEBUG("Received from %d Buffer: %d\n", _c->m_RemoteIP, _avail);
+				char __buff[0xFF];
+				memset(__buff, 0, 0xFF);
+				recvfrom(s, __buff, _avail, 0, 0, 0);
+
+
+				//sockaddr_in SenderAddr;
+				//int SenderAddrSize = sizeof(SenderAddr);
+				//recvfrom(s, __buff, 0xFF, 0, (SOCKADDR *)& SenderAddr, &SenderAddrSize); // this will ALWAYS return -1 because of WSA_WOULDBLOCK
+				//if (WSAGetLastError() != WSAEWOULDBLOCK) PRINT_ERROR("ERROR: recvfrom failed with error: #%d\n", WSAGetLastError());
+
+
+				continue;
+			}
 		}
 	}
 }

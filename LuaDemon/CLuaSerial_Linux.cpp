@@ -193,7 +193,7 @@ int CLuaSerial::Lua_Read(lua_State * State)
 
 		if (read(_P->m_PortReference, _P->m_FreeBuffer, _Length) != _Length)
 		{
-			PRINT_WARNING("Read on %s failed!\n", _portname);
+			PRINT_WARNING("Read on %s failed!\n", _portname.c_str());
 			return 0;
 		}
 

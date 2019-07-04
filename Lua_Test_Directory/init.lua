@@ -3,11 +3,13 @@ _TEST = _TEST or 0
 _TEST = _TEST + 1
 
 include("duh/includeme.lua")
-print("Test: ".._TEST)
-print("Test! Dir: " .. _LUAENV.ENVDIR)
-print("Test! System: " .. _LUAENV.ENVSYS)
+print("Run # " .. _TEST)
+print("Root: " .. _LUAENV.ENVDIR)
+print("Arch: " .. _LUAENV.ENVSYS)
 
-local PORT_A = "ttyS0"
+local PORT_A = "ttyS560"
+
+
 
 local data = {}
 
@@ -26,25 +28,25 @@ end
 
 
 
-local buff = table.concat(data)
+--local buff = table.concat(data)
 
---net.dumpUDP("10.0.0.8", 64394, buff)
+net.dumpUDP("10.0.0.8", 64394, buff)
+
+net.openUDP(1666, false, function(data, ip)
+	print("call udp!")
+	print("IP: " .. ip)
+	print("Data: " .. data)
+end)
+
 
 -- local s = net.connect("10.0.0.8", 62770)
 -- print(s)
 
--- net.openUDP(1666, false, function(data, ip)
-	-- print("call udp!")
-	-- print("IP: " .. ip)
-	-- print("Data: " .. data)
+-- local s = 0
+-- s = net.openTCP(666, 5, function()
+	-- print("call tcp!")
 -- end)
-
-
-local s = 0
-s = net.openTCP(666, 5, function()
-	print("call tcp!")
-end)
-print(s)
+-- print(s)
 
 
 

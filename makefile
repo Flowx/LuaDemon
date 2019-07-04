@@ -6,7 +6,7 @@
 code_dir  = LuaDemon
 
 #x64 / x86 / ARM
-code_arch = x86
+code_arch = x64
 
 #compile everything and output an executeable
 all:

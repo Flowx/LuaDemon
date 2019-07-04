@@ -154,24 +154,58 @@ int CLuaNet::Lua_connect(lua_State * State)
 
 void CLuaNet::PollFunctions()
 {
-	char buf[4096]; // 4kB receive buffer
+	//char buf[4096]; // 4kB receive buffer
+	//for (auto _s : CLuaNet::m_UDPSockets)
+	//{
+	//	memset(buf, '\0', 4096); // clear the buffer
 
+	//	struct sockaddr_in si_other;
+	//	int recv_len = 0;
+	//	unsigned int slen = sizeof(si_other);
+
+	//	if ((recv_len = recvfrom(_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+	//	{
+	//		if (errno == EWOULDBLOCK) continue; // ignore - caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
+	//		PRINT_ERROR("ERROR: recvfrom() failed: %s\n", strerror(errno));
+	//	}
+	//	else // we received actual data
+	//	{
+	//		PRINT_DEBUG("Received something!\n");
+	//	}
+	//}
+
+	char buf[4096]; // 4kB receive buffer
 	for (auto _s : CLuaNet::m_UDPSockets)
 	{
 		memset(buf, '\0', 4096); // clear the buffer
 
-		struct sockaddr_in si_other;
-		int recv_len = 0;
-		unsigned int slen = sizeof(si_other);
+		if (!_s->m_LuaReference) continue; // no Lua function available
 
-		if ((recv_len = recvfrom(_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+		struct sockaddr_in client;
+		int recv_len = 0;
+		unsigned int slen = sizeof(client);
+
+		if ((recv_len = recvfrom(_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &slen)) == -1)
 		{
 			if (errno == EWOULDBLOCK) continue; // ignore - caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
 			PRINT_ERROR("ERROR: recvfrom() failed: %s\n", strerror(errno));
 		}
-		else // we received actual data
+		else
 		{
-			PRINT_DEBUG("Received something!\n");
+			//unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
+			//PRINT_DEBUG("Received something from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]);
+
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
+
+			lua_pushlstring(CLuaEnvironment::_LuaState, (const char *)&buf, recv_len);
+			lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
+
+			if (lua_pcall(CLuaEnvironment::_LuaState, 2, 0, 0)) // Some error occured
+			{
+				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				lua_pop(CLuaEnvironment::_LuaState, 1);
+			}
 		}
 	}
+
 }
