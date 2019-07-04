@@ -30,7 +30,7 @@ void CLuaEnvironment::FileSpy()
 			PRINT_ERROR("ERROR: FindFirstChangeNotification() returned invalid or null handle in Lua environment");
 		}
 
-		if (WaitForSingleObject(_dirHandle, INFINITE) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(_dirHandle, INFINITE) == WAIT_OBJECT_0) // This is the blocking call.
 		{
 			if (duration_cast<milliseconds>(system_clock::now() - _lastChange).count() > 100)
 			{

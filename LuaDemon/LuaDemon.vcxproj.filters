@@ -9,36 +9,23 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Header Files\Lua">
       <UniqueIdentifier>{d54b4aab-84ed-4c72-9ccc-d87afe1305ee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Lua">
-      <UniqueIdentifier>{47da3b96-4e04-48f5-9a71-d72a90607167}</UniqueIdentifier>
+    <Filter Include="Lua Libraries">
+      <UniqueIdentifier>{829c36b8-39af-4ee9-8adc-3e10b25c04c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Lua_Test_Directory">
-      <UniqueIdentifier>{2010c8ae-8e73-4aa7-add2-3d9eb6eaedce}</UniqueIdentifier>
+    <Filter Include="Lua Libraries\Net">
+      <UniqueIdentifier>{f1d5402d-c87e-45e1-a541-188cf7dfe1c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Libraries">
-      <UniqueIdentifier>{4817dfaf-a6b6-40a5-aa58-c2c4010dd518}</UniqueIdentifier>
+    <Filter Include="Lua Libraries\File">
+      <UniqueIdentifier>{5c50603f-a57a-4d14-9048-99c7648f923f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Libraries">
-      <UniqueIdentifier>{fc5fbb44-a7ce-4927-a694-dd995d49ccac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Libraries\Net">
-      <UniqueIdentifier>{586824cb-eb3b-4698-9af7-9ef7a1a513be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Libraries\Serial">
+    <Filter Include="Lua Libraries\Serial">
       <UniqueIdentifier>{e426682c-07ed-4742-9efe-f2b31f67888e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Libraries\Std">
+    <Filter Include="Lua Libraries\Std">
       <UniqueIdentifier>{669eb718-610b-483d-8207-0d7652520ef4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Libraries\File">
-      <UniqueIdentifier>{5c50603f-a57a-4d14-9048-99c7648f923f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,29 +50,29 @@
     <ClCompile Include="FileSpy_Linux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaNet.cpp">
-      <Filter>Source Files\Libraries\Net</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaNet_Win.cpp">
-      <Filter>Source Files\Libraries\Net</Filter>
-    </ClCompile>
     <ClCompile Include="CLuaSerial.cpp">
-      <Filter>Source Files\Libraries\Serial</Filter>
+      <Filter>Lua Libraries\Serial</Filter>
     </ClCompile>
     <ClCompile Include="CLuaSerial_Linux.cpp">
-      <Filter>Source Files\Libraries\Serial</Filter>
+      <Filter>Lua Libraries\Serial</Filter>
     </ClCompile>
     <ClCompile Include="CLuaSerial_Win.cpp">
-      <Filter>Source Files\Libraries\Serial</Filter>
+      <Filter>Lua Libraries\Serial</Filter>
     </ClCompile>
     <ClCompile Include="CLuaStdLib.cpp">
-      <Filter>Source Files\Libraries\Std</Filter>
+      <Filter>Lua Libraries\Std</Filter>
     </ClCompile>
     <ClCompile Include="CLuaFile.cpp">
-      <Filter>Source Files\Libraries\File</Filter>
+      <Filter>Lua Libraries\File</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaNet_Win.cpp">
+      <Filter>Lua Libraries\Net</Filter>
     </ClCompile>
     <ClCompile Include="CLuaNet_Linux.cpp">
-      <Filter>Source Files\Libraries\Net</Filter>
+      <Filter>Lua Libraries\Net</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaNet.cpp">
+      <Filter>Lua Libraries\Net</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,38 +103,21 @@
     <ClInclude Include="CLuaLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CLuaStdLib.h">
-      <Filter>Header Files\Libraries</Filter>
-    </ClInclude>
     <ClInclude Include="CLuaNet.h">
-      <Filter>Header Files\Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="CLuaSerial.h">
-      <Filter>Header Files\Libraries</Filter>
+      <Filter>Lua Libraries\Net</Filter>
     </ClInclude>
     <ClInclude Include="CLuaFile.h">
-      <Filter>Header Files\Libraries</Filter>
+      <Filter>Lua Libraries\File</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaSerial.h">
+      <Filter>Lua Libraries\Serial</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaStdLib.h">
+      <Filter>Lua Libraries\Std</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Lua\lua51.dll">
-      <Filter>Lua</Filter>
-    </None>
-    <None Include="..\Lua_Test_Directory\includeme.lua">
-      <Filter>Lua_Test_Directory</Filter>
-    </None>
-    <None Include="..\Lua_Test_Directory\init.lua">
-      <Filter>Lua_Test_Directory</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="Lua\lua51.lib">
-      <Filter>Lua</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\Lua_Test_Directory\test.txt">
-      <Filter>Lua_Test_Directory</Filter>
-    </Text>
+    <None Include="..\Lua_Test_Directory\init.lua" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

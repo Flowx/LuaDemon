@@ -8,7 +8,7 @@
 #pragma warning(disable : 4996) // disables warning about "unsafe" functions
 #endif
 
-std::map<std::string, CLuaSerialPort *> CLuaSerial::m_PortList;
+std::map<std::string, CLuaSerial::CLuaSerialPort *> CLuaSerial::m_PortList;
 
 // Lua Exposed Functions
 

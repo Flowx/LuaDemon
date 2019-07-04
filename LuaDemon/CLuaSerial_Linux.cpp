@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-std::map<std::string, CLuaSerialPort *> CLuaSerial::m_PortList;
+std::map<std::string, CLuaSerial::CLuaSerialPort *> CLuaSerial::m_PortList;
 
 // Lua Exposed Functions
 
@@ -54,7 +54,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 
 	if (m_PortList.count(_portname) > 0) // there is already a Lua serial port on this port
 	{
-		CLuaSerialPort *_P = m_PortList[_portname];
+		CLuaSerial::CLuaSerialPort *_P = m_PortList[_portname];
 		close(_P->m_PortReference);
 		delete _P;
 		m_PortList.erase(_portname);
@@ -108,7 +108,7 @@ int CLuaSerial::Lua_Open(lua_State * State)
 		return 1;
 	}
 
-	CLuaSerial::m_PortList[_portname] = new CLuaSerialPort(_portname.c_str());
+	CLuaSerial::m_PortList[_portname] = new CLuaSerial::CLuaSerialPort(_portname.c_str());
 	CLuaSerial::m_PortList[_portname]->m_PortReference = fd;
 
 	lua_pushboolean(State, 1);
@@ -128,7 +128,7 @@ int CLuaSerial::Lua_Send(lua_State * State)
 	int _file;
 	if (m_PortList.count(_portname) > 0)
 	{
-		CLuaSerialPort *_P = m_PortList[_portname];
+		CLuaSerial::CLuaSerialPort *_P = m_PortList[_portname];
 		_file = _P->m_PortReference;
 	}
 	else return 0;
@@ -159,7 +159,7 @@ int CLuaSerial::Lua_Available(lua_State * State)
 
 	if (m_PortList.count(_portname) > 0)
 	{
-		CLuaSerialPort *_P = m_PortList[_portname];
+		CLuaSerial::CLuaSerialPort *_P = m_PortList[_portname];
 		
 		int _available = 0;
 
@@ -182,7 +182,7 @@ int CLuaSerial::Lua_Read(lua_State * State)
 
 	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
 	{
-		CLuaSerialPort *_P = m_PortList[_portname];
+		CLuaSerial::CLuaSerialPort *_P = m_PortList[_portname];
 
 		size_t _Length = 0;
 
@@ -215,7 +215,7 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 	if (!_portname.empty() && (m_PortList.count(_portname) > 0))
 	{
-		CLuaSerialPort *_P = m_PortList[_portname];
+		CLuaSerial::CLuaSerialPort *_P = m_PortList[_portname];
 
 		size_t _Length = 0;
 
@@ -241,9 +241,9 @@ int CLuaSerial::Lua_ReadAll(lua_State * State)
 
 void CLuaSerial::PollFunctions()
 {
-	for (std::pair<std::string, CLuaSerialPort*> _v : m_PortList)
+	for (std::pair<std::string, CLuaSerial::CLuaSerialPort*> _v : m_PortList)
 	{
-		CLuaSerialPort * Port = _v.second;
+		CLuaSerial::CLuaSerialPort * Port = _v.second;
 		
 		// TODO: Add ioctl to check if file descriptor is valid
 

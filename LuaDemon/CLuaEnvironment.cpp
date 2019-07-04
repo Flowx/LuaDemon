@@ -11,6 +11,10 @@ std::thread CLuaEnvironment::_FileThread;
 #pragma endregion
 
 
+/*
+	The _LUAENV global table contains some useful information about the system architecture, hardware and OS environment.
+
+*/
 void CLuaEnvironment::PushEnvTable()
 {
 	lua_newtable(_LuaState);
@@ -50,6 +54,9 @@ void CLuaEnvironment::Cycle()
 	}
 }
 
+/*
+	Main function that actually loads the Lua files.
+*/
 void CLuaEnvironment::LoadLua()
 {
 	_Initialized = false;
@@ -61,7 +68,7 @@ void CLuaEnvironment::LoadLua()
 	_Error = luaL_loadfile(_LuaState, buffer.c_str()); // Load the entry point file
 	if (_Error)
 	{
-		PRINT_ERROR("ERROR: Lua failed to initialize: %s\n", lua_tostring(_LuaState, -1));
+		PRINT_ERROR("ERROR: Lua failed to initialize: %s \n", lua_tostring(_LuaState, -1));
 		lua_pop(_LuaState, 1);
 	}
 	else
@@ -71,7 +78,7 @@ void CLuaEnvironment::LoadLua()
 		{
 			PRINT_ERROR("ERROR: Lua returned with error:\n");
 
-			PRINT_WARNING("ERROR: %s\n", lua_tostring(_LuaState, -1));
+			PRINT_WARNING("ERROR: %s \n", lua_tostring(_LuaState, -1));
 			lua_pop(_LuaState, 1);
 		}
 		else

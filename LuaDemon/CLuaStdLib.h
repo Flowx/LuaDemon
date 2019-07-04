@@ -1,9 +1,10 @@
 #pragma once
 #include "Lua/lua.hpp"
+#include "CLuaLib.h"
 
-class CLuaStdLib
+class CLuaStdLib : CLuaLib
 {
-	static int Lua_include(lua_State * S);
+	static int Lua_include(lua_State * S); // NOTE: Is this useful? require and dofile exists too ...
 	static int Lua_forceReload(lua_State * S);
 
 public:
@@ -11,4 +12,3 @@ public:
 	static void PollFunctions();
 	static void LoadFunctions();
 };
-
