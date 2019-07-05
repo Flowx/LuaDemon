@@ -22,11 +22,11 @@ void CLuaEnvironment::PushEnvTable()
 	lua_pushstring(_LuaState, _Directory.c_str()); // Root directory of the init.lua file
 	lua_setfield(_LuaState, -2, "ENVDIR");
 
-	#ifdef _WIN32 // This just shows what system this was compiled to
+#ifdef _WIN32 // This just shows what system this was compiled to
 	lua_pushstring(_LuaState, "WINDOWS"); 
-	#else
+#else
 	lua_pushstring(_LuaState, "LINUX");
-	#endif	
+#endif	
 	lua_setfield(_LuaState, -2, "ENVSYS");
 
 	lua_setglobal(_LuaState, "_LUAENV");

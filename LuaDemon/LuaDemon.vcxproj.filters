@@ -65,15 +65,6 @@
     <ClCompile Include="CLuaFile.cpp">
       <Filter>Lua Libraries\File</Filter>
     </ClCompile>
-    <ClCompile Include="CLuaNet_Win.cpp">
-      <Filter>Lua Libraries\Net</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaNet_Linux.cpp">
-      <Filter>Lua Libraries\Net</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaNet.cpp">
-      <Filter>Lua Libraries\Net</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lua\lualib.h">
@@ -102,9 +93,6 @@
     </ClInclude>
     <ClInclude Include="CLuaLib.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CLuaNet.h">
-      <Filter>Lua Libraries\Net</Filter>
     </ClInclude>
     <ClInclude Include="CLuaFile.h">
       <Filter>Lua Libraries\File</Filter>

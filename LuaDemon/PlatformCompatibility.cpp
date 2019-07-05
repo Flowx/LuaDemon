@@ -11,10 +11,10 @@
 	Provides functions to unfiy UNIX and Windows IO
 */
 
-bool __nodebug = false; // False = supress debug messages to be printed
+bool __nodebug = false; // True = supress debug messages to be printed
 
 #ifdef _WIN32 // Win32 console
-
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 HANDLE ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);

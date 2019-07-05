@@ -1,7 +1,6 @@
 #if _WIN32 // ignore this file on linux
 #include "CLuaNet.h"
 #include "PlatformCompatibility.h"
-//#include <WinSock2.h>
 
 // Windows specific stuff
 #pragma comment(lib, "ws2_32.lib")
@@ -394,7 +393,6 @@ void CLuaNet::PollFunctions()
 			PRINT_DEBUG("Active connections on Port %i:   %i#\n", _s->m_IPPort, _s->m_Clients.size());
 		}
 
-<<<<<<< HEAD
 		// check for new data on this ports' clients
 		u_long _avail = 0;
 		for (auto _c : _s->m_Clients)
@@ -416,7 +414,9 @@ void CLuaNet::PollFunctions()
 
 
 				continue;
-=======
+			}
+		}
+
 		// check existing connections for new data
 		for (auto i = _s->m_Clients.begin(); i != _s->m_Clients.end(); i++) {
 			auto _c = *i;
@@ -502,7 +502,6 @@ void CLuaNet::PollFunctions()
 			{
 				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
 				lua_pop(CLuaEnvironment::_LuaState, 1);
->>>>>>> origin/master
 			}
 		}
 	}

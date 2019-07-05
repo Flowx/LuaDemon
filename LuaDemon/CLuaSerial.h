@@ -5,6 +5,7 @@
 #include <vector>
 
 #if _WIN32 // ignore this file on linux
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif
 

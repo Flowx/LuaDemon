@@ -1,5 +1,5 @@
 #ifdef _WIN32
-
+#define WIN32_LEAN_AND_MEAN
 #include "CLuaEnvironment.h"
 #include "PlatformCompatibility.h"
 #include <Windows.h>

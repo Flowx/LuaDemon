@@ -2,7 +2,6 @@
 
 #include "CLuaSerial.h"
 #include "PlatformCompatibility.h"
-#include <windows.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996) // disables warning about "unsafe" functions

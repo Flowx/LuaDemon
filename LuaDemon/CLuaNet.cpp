@@ -77,7 +77,7 @@ int CLuaNet::Lua_parseIP(lua_State * State)
 {
 	int input = lua_tointeger(State, 1);
 	char * buff;
-	inet_ntop(AF_INET, 0, input);
+	//inet_ntop(AF_INET, 0, input);
 
 
 

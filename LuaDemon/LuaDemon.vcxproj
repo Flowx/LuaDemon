@@ -129,7 +129,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions) _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
@@ -169,14 +169,6 @@
     <ClCompile Include="CLuaEnvironment.cpp" />
     <ClCompile Include="CLuaFile.cpp" />
     <ClCompile Include="CLuaLib.cpp" />
-    <ClCompile Include="CLuaNet.cpp" />
-    <ClCompile Include="CLuaNet_Linux.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="CLuaNet_Win.cpp" />
     <ClCompile Include="CLuaSerial.cpp" />
     <ClCompile Include="CLuaSerial_Linux.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Default|Win32'">true</ExcludedFromBuild>
@@ -205,7 +197,6 @@
     <ClInclude Include="CLuaEnvironment.h" />
     <ClInclude Include="CLuaFile.h" />
     <ClInclude Include="CLuaLib.h" />
-    <ClInclude Include="CLuaNet.h" />
     <ClInclude Include="CLuaStdLib.h" />
     <ClInclude Include="CLuaSerial.h" />
     <ClInclude Include="Lua\lauxlib.h" />

@@ -1,14 +1,16 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #include "CLuaLib.h"
 #include "CLuaEnvironment.h"
 #include <list>
-
 #if _WIN32
-	#include <WinSock2.h>
 	#include <Ws2tcpip.h>
+	#include <WinSock2.h>
 #else
 	#include<arpa/inet.h>
 #endif
+
+
 
 class CLuaNet : CLuaLib
 {
