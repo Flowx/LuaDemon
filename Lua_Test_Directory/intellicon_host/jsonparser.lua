@@ -1,5 +1,3 @@
-print("json included")
-
 --[[ json.lua
 A compact pure-Lua JSON library.
 The main functions are: json.stringify, json.parse.

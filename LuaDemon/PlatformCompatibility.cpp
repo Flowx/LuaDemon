@@ -149,11 +149,21 @@ void PRINT_DEBUG(const char * Message, ...)
 
 bool EXISTS_DIRECTORY(const char *path)
 {
+
+	int a = strlen(path);
 	char * buffer = (char *)malloc(strlen(path) + 1);
 
 	int i = 0;
+	while (path[i] != 0 && i < 0xFFFF)
+	{
+		if (path[i] == '\\')
+			buffer[i] = '/';
+		else
+			buffer[i] = path[i];
 
-	while (path[i] != 0 && i < 0xFFFF) path[i] == '\\' ? buffer[i++] = '/' : buffer[i] = path[i++];
+		i++;
+	}
+
 	buffer[i] = 0; // null terminate it
 	
 	struct stat info;

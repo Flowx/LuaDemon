@@ -41,7 +41,7 @@ bool initWSA()
 		
 		return false;
 	}
-	PRINT_DEBUG("WSAStartup successful! Version: %i.%i\n", (char)wsaData.wVersion, (char)(wsaData.wVersion >> 8)); // is always going to be 2.2 but eh
+	PRINT_DEBUG("WSAStartup successful! Version: %i.%i\n", (char)wsaData.wVersion, (char)(wsaData.wVersion >> 8)); // its always going to be 2.2 but eh
 	CLuaNet::m_Init = true;
 	return true;
 }

@@ -15,9 +15,6 @@
     <Filter Include="Lua Libraries">
       <UniqueIdentifier>{829c36b8-39af-4ee9-8adc-3e10b25c04c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Lua Libraries\Net">
-      <UniqueIdentifier>{f1d5402d-c87e-45e1-a541-188cf7dfe1c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Lua Libraries\File">
       <UniqueIdentifier>{5c50603f-a57a-4d14-9048-99c7648f923f}</UniqueIdentifier>
     </Filter>
@@ -26,6 +23,12 @@
     </Filter>
     <Filter Include="Lua Libraries\Std">
       <UniqueIdentifier>{669eb718-610b-483d-8207-0d7652520ef4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lua Libraries\Network">
+      <UniqueIdentifier>{c9a72e84-8020-475b-801e-7eadd6d08160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lua Libraries\Network\UDP">
+      <UniqueIdentifier>{bc2425bf-ba80-497c-bfd0-aedb73f29608}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PlatformCompatibility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CLuaLib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LibraryLinks.cpp">
@@ -64,6 +64,12 @@
     </ClCompile>
     <ClCompile Include="CLuaFile.cpp">
       <Filter>Lua Libraries\File</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaUDP.cpp">
+      <Filter>Lua Libraries\Network\UDP</Filter>
+    </ClCompile>
+    <ClCompile Include="CWSAHandler.cpp">
+      <Filter>Lua Libraries\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +108,12 @@
     </ClInclude>
     <ClInclude Include="CLuaStdLib.h">
       <Filter>Lua Libraries\Std</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaUDP.h">
+      <Filter>Lua Libraries\Network\UDP</Filter>
+    </ClInclude>
+    <ClInclude Include="CWSAHandler.h">
+      <Filter>Lua Libraries\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
