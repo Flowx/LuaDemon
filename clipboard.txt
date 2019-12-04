@@ -1,4 +1,0 @@
-pw_is_admin@LubuntuBox:~/Desktop/src/LuaDemon$ make
-g++ -w -std=c++17 -pthread LuaDemon/*.h LuaDemon/*.cpp LuaDemon/Lua/*.h LuaDemon/Lua/*.hpp -o LuaDemon.o -L. LuaDemon/Lua/Linux_x64/libluajit.so
-LuaDemon/CLuaUDP.h:27:39: error: ‘m_UDPSockets’ declared as an ‘inline’ field
-  static inline std::list<UDPSocket *> m_UDPSockets;

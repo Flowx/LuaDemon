@@ -9,10 +9,16 @@
 	#include <string>
 #else
 	#include <arpa/inet.h>
+	#include <sys/socket.h>
+	#include <fcntl.h>
 	#include <cstring>
 
+	#define TRUE 1
+	#define FALSE 0
+
 	#define SOCKET_ERROR (-1)
-	typedef UINT_PTR SOCKET
+	
+	typedef int SOCKET;
 #endif
 
 #define CLUAUDP_CLASSNAME "socket_udp"
@@ -30,13 +36,22 @@ void CLuaUDP::PollFunctions()
 		if (!_s->m_LuaOnData) continue; // no Lua function available
 
 		struct sockaddr_in client;
-		int slen = sizeof(client), recv_len = 0;
+		int recv_len = 0;
 
+	#if _WIN32 // prevents blocking while reading
+		int slen = sizeof(client);
 		if ((recv_len = recvfrom((SOCKET)_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &slen)) == SOCKET_ERROR)
 		{
 			int _err = WSAGetLastError();
-			if (_err == 10035) continue; // ignore - caused by ioctlsocket setting to prevent blocking; TODO: Optimize!
+			if (_err == 10035) continue; 
 			PRINT_ERROR("ERROR: recvfrom() failed with WSA error code : %d\n", _err);
+	#else
+		unsigned int slen = sizeof(client);
+		if ((recv_len = recvfrom((SOCKET)_s->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &slen)) == SOCKET_ERROR)
+		{
+			if (errno == EWOULDBLOCK) continue;
+			PRINT_ERROR("ERROR: recvfrom() failed: %s\n", strerror(errno));
+	#endif
 		}
 		else // we received actual data
 		{
@@ -208,34 +223,40 @@ int CLuaUDP::Lua_dump(lua_State * State)
 	si_other.sin_family = AF_INET;
 	si_other.sin_port = htons(IP_Port);
 
+	// Parse the IP from the string
 	if (strlen(IP_Addr) == 9 && tolower(IP_Addr[0]) == 'l' && tolower(IP_Addr[8]) == 't') // checks if ip is "localhost"
 		si_other.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	else
-		inet_pton(AF_INET, IP_Addr, &si_other.sin_addr.s_addr);
-
-	// indicates that something most likely went wrong while parsing; though 204... is technically a valid IP
-	if (si_other.sin_addr.S_un.S_addr == 3435973836) PRINT_WARNING("WARNING: IP Parsed as 204.204.204.204 may be invalid!\n");
-	if (si_other.sin_addr.S_un.S_addr == 0)
+	else 
 	{
-		PRINT_ERROR("ERROR: udp.dump failed to parse IP.\n");
-		return 0;
+		if (inet_pton(AF_INET, IP_Addr, &si_other.sin_addr.s_addr) != 1)
+		{
+			PRINT_ERROR("ERROR: udp.dump() failed to parse IP.\n");
+			return 0;
+		}
 	}
+	
+
 
 	// create the socket and send the data
-
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
 	{
 #if _WIN32
 		PRINT_ERROR("ERROR: socket() failed with error code : %d\n", WSAGetLastError());
 #else
-		PRINT_ERROR("ERROR: socket() failed");
+		PRINT_ERROR("ERROR: socket() failed witg error code : %d\n", errno);
 #endif
 		return 0;
 	}
 
 	int res = sendto(s, data, (int)datalen, 0, (struct sockaddr *) &si_other, sizeof(si_other));
 
+#if _WIN32
 	closesocket(s);
+#else
+	close(s);
+#endif
+
+
 
 	if (res != SOCKET_ERROR)
 	{
@@ -301,24 +322,43 @@ int CLuaUDP::Lua_open(lua_State * State)
 	SOCKET s;
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == SOCKET_ERROR)
 	{
-		PRINT_ERROR("ERROR: socket() failed with error code : %d\n", WSAGetLastError());
+	#if _WIN32
+		PRINT_ERROR("ERROR: socket() failed with WSA error code : %d\n", WSAGetLastError());
+	#else
+		PRINT_ERROR("ERROR: socket() failed with error code : %d\n", errno);
+	#endif
 		return 0;
 	}
 
 	if (bind(s, (sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
 	{
+	#if _WIN32
 		PRINT_ERROR("ERROR: bind() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
-		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with WSA error code : %d\n", WSAGetLastError());
+	#else
+		PRINT_ERROR("ERROR: bind() failed with error code : %d\n\tTerminating Socket...\n", errno);
+		if (close(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: close() failed with error code : %d\n", errno);
+	#endif
 		return 0;
 	}
 
+#if	_WIN32
 	unsigned long NonBlock = 1; // used in polling mode; allows using only one thread for all ports
 	if (ioctlsocket(s, FIONBIO, &NonBlock) == SOCKET_ERROR)
 	{
 		PRINT_ERROR("ERROR: ioctlsocket() failed with error code : %d\n\tTerminating Socket...\n", WSAGetLastError());
-		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
+		if (closesocket(s) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with WSA error code : %d\n", WSAGetLastError());
 		return 0;
 	}
+#else
+	// prevent blocking
+	if (fcntl(s, F_SETFL, fcntl(s, F_GETFL) | O_NONBLOCK) == -1)
+	{
+		PRINT_ERROR("ERROR: fcntl() O_NONBLOCK failed: %s\n\tTerminating Socket...\n", strerror(errno));
+		if (close(s) == -1) PRINT_ERROR("ERROR: close() failed.\n");
+		return 0;
+	}
+#endif
 
 	//most of the input and error handling is already done by WSA
 
@@ -375,10 +415,14 @@ int CLuaUDP::Lua_close(lua_State * State)
 	for (auto i = CLuaUDP::m_UDPSockets.begin(); i != CLuaUDP::m_UDPSockets.end(); i++) {
 		UDPSocket * _s = *i;
 
-		if (_port == _s->m_IPPort) //gotcha
+		if (_port == _s->m_IPPort) // gotcha
 		{
 			luaL_unref(State, LUA_REGISTRYINDEX, _s->m_LuaOnData); // remove the lua hook
+		#if _WIN32
 			closesocket(_s->m_Socket); // close the socket
+		#else
+			close(_s->m_Socket);
+		#endif
 			delete _s;
 			i = CLuaUDP::m_UDPSockets.erase(i); // remove the socket from the list
 			//if (i != CLuaUDP::m_UDPSockets.end()) i++; else break; // we dont need to contiue after this

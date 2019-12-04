@@ -1,4 +1,4 @@
-print("Initializing Intellicon!\n")
+print("Initializing Intellicon Host!\n")
 
 include("jsonparser.lua") -- stole this somewhere ...
 
