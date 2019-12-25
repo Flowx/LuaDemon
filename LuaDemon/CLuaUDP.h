@@ -6,6 +6,7 @@
 /*
 	Basic UDP wrapper for Lua access
 
+	STATUS: Seems to work fine for now, may need some polish.
 */
 class CLuaUDP : CLuaLib
 {
@@ -14,15 +15,17 @@ class CLuaUDP : CLuaLib
 	public:
 		UDPSocket(unsigned int Socket) {
 			m_Socket = Socket;
-			//m_ID = 0; // getID();
 		};
-		//unsigned long	m_ID; // reference ID for internal handling
-		unsigned short	m_IPPort = 0; // Port number
-		unsigned int	m_Socket; // Socket reference; Local/Server Socket!!
-		int	m_LuaOnData; // Reference to Lua function
+		unsigned short	m_IPPort = 0;	// Port number
+		unsigned int	m_Socket;		// Socket reference; Local/Server Socket!!
+				 int	m_LuaOnData;	// Reference to Lua function
+				 bool	m_reuse;		// reuse socket after reloads
 	};
 
-	static void makeLuaObj(lua_State * State, UDPSocket * Socket);
+	static int __tostring(lua_State * Stat);
+	static int __newindex(lua_State * Stat);
+
+	static void makeLuaObj(UDPSocket * Socket);
 
 	static inline std::list<UDPSocket *> m_UDPSockets;
 
@@ -31,7 +34,6 @@ public:
 	static void PollFunctions();
 	static void LoadFunctions();
 
-//private:
 	static int Lua_dump(lua_State * State);
 	static int Lua_open(lua_State * State);
 	static int Lua_close(lua_State * State);

@@ -105,7 +105,7 @@ void CLuaUDP::LoadFunctions()
 /*
 	used by makeLuaObj
 */
-int __tostring(lua_State * State)
+int CLuaUDP::__tostring(lua_State * State)
 {
 	lua_getfield(State, -1, "port"); // looks for the table key and pushes the value on the stack
 
@@ -117,26 +117,9 @@ int __tostring(lua_State * State)
 }
 
 /*
-	used by makeLuaObj
-
-	currently broken!
-*/
-int __eq(lua_State * State)
-{
-	PRINT_DEBUG("Called");
-
-	//lua_getfield(State, -1, "socket");
-
-	//int a = lua_tointeger(State, -1);
-
-	lua_pushboolean(State, TRUE);
-	return 1;
-}
-
-/*
 	prevents accidental access
 */
-int __newindex(lua_State * State)
+int CLuaUDP::__newindex(lua_State * State)
 {
 	PRINT_DEBUG("Attempted to write protected table! [%s] \n", CLUAUDP_CLASSNAME);
 
@@ -151,34 +134,30 @@ int __newindex(lua_State * State)
 	TODO: Currently every object gets its own metatable!
 		  This means functions like __eq wont work!
 */
-void CLuaUDP::makeLuaObj(lua_State * State, UDPSocket * Socket)
+void CLuaUDP::makeLuaObj(UDPSocket * Socket)
 {
+	lua_State * State = CLuaEnvironment::_LuaState;
+
 	lua_newtable(State); // every list entry is actually a table
 
 	// Properties/members
 	lua_pushnumber(State, Socket->m_IPPort);
 	lua_setfield(State, -2, "port");
 
-	//lua_pushnumber(State, Socket->m_LuaOnData); // kind of useless in lua..
-	//lua_setfield(State, -2, "luaref");
-
 	lua_pushnumber(State, Socket->m_Socket);
 	lua_setfield(State, -2, "socket");
 
 	// Metatable
 	lua_newtable(State);
-	
-	//lua_pushcfunction(State, __eq);
-	//lua_setfield(State, -2, "__eq");
 
-	lua_pushcfunction(State, __tostring);
-	lua_setfield(State, -2, "__tostring");
+		lua_pushcfunction(State, __tostring);
+		lua_setfield(State, -2, "__tostring");
 
-	lua_pushcfunction(State, __newindex);
-	lua_setfield(State, -2, "__newindex");
+		lua_pushcfunction(State, __newindex);
+		lua_setfield(State, -2, "__newindex");
 
-	lua_pushstring(State, CLUAUDP_CLASSNAME);
-	lua_setfield(State, -2, "__type");
+		lua_pushstring(State, CLUAUDP_CLASSNAME);
+		lua_setfield(State, -2, "__type");
 
 	lua_setmetatable(State, -2);
 }
@@ -293,8 +272,9 @@ int CLuaUDP::Lua_open(lua_State * State)
 		PRINT_ERROR("ERROR: udp.open received 0 as port number!\n");
 		return 0;
 	}
-
-	if (!(bool)lua_toboolean(State, 2)) // this just removes the old callback and attaches the new one
+	
+	bool _reuse = (bool)lua_toboolean(State, 2);
+	if (!_reuse) // this just removes the old callback and attaches the new one
 	{
 		for (auto _s : CLuaUDP::m_UDPSockets)
 		{
@@ -307,7 +287,7 @@ int CLuaUDP::Lua_open(lua_State * State)
 				// function has to be last argument or this will create a wrong reference
 				_s->m_LuaOnData = luaL_ref(State, LUA_REGISTRYINDEX);
 
-				makeLuaObj(State, _s);
+				makeLuaObj(_s);
 				return 1;
 			}
 		}
@@ -365,6 +345,7 @@ int CLuaUDP::Lua_open(lua_State * State)
 	UDPSocket * _luasock = new UDPSocket(s);
 	_luasock->m_IPPort = IP_Port;
 	_luasock->m_Socket = (unsigned int)s; // keep the socket refernce
+	_luasock->m_reuse  = _reuse;
 
 	if (_luasock->m_LuaOnData != 0) // there already is a function hooked to this port
 	{
@@ -375,7 +356,7 @@ int CLuaUDP::Lua_open(lua_State * State)
 	
 	CLuaUDP::m_UDPSockets.push_front(_luasock); // add the socket to the list
 
-	makeLuaObj(State, _luasock);
+	makeLuaObj(_luasock);
 	return 1;
 }
 
@@ -450,7 +431,7 @@ int CLuaUDP::Lua_list(lua_State * State)
 	{
 		lua_pushnumber(State, ++c);
 		
-		makeLuaObj(State, _s); // this pushes a table on the stack
+		makeLuaObj(_s); // this pushes a table on the stack
 
 		// push this table into the list
 		lua_settable(State, -3);

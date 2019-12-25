@@ -30,6 +30,9 @@
     <Filter Include="Lua Libraries\Network\UDP">
       <UniqueIdentifier>{bc2425bf-ba80-497c-bfd0-aedb73f29608}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Lua Libraries\Network\TCP">
+      <UniqueIdentifier>{1036369a-dda8-466e-af21-e44fb5853814}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="CWSAHandler.cpp">
       <Filter>Lua Libraries\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="CLuaTCP.cpp">
+      <Filter>Lua Libraries\Network\TCP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,9 +121,11 @@
     <ClInclude Include="CWSAHandler.h">
       <Filter>Lua Libraries\Network</Filter>
     </ClInclude>
+    <ClInclude Include="CLuaTCP.h">
+      <Filter>Lua Libraries\Network\TCP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Lua_Test_Directory\init.lua" />
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

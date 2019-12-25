@@ -180,6 +180,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="CLuaStdLib.cpp" />
+    <ClCompile Include="CLuaTCP.cpp" />
     <ClCompile Include="CLuaUDP.cpp" />
     <ClCompile Include="CWSAHandler.cpp" />
     <ClCompile Include="FileSpy_Linux.cpp">
@@ -204,6 +205,7 @@
     <ClInclude Include="CLuaLib.h" />
     <ClInclude Include="CLuaStdLib.h" />
     <ClInclude Include="CLuaSerial.h" />
+    <ClInclude Include="CLuaTCP.h" />
     <ClInclude Include="CLuaUDP.h" />
     <ClInclude Include="CWSAHandler.h" />
     <ClInclude Include="Lua\lauxlib.h" />
@@ -216,7 +218,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Lua_Test_Directory\init.lua" />
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

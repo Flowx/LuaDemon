@@ -21,19 +21,36 @@ if not _G.__oldtype then -- just check if its already overloaded
 end
 
 
---udp.dump("localhost", 50720, "sdsadsa")
 
-include("intellicon_host/init.lua")
+--local sock = tcp.open(1337, false, function(data) end)
 
 
--- local a = udp.open(1337, false, function(data, ip)
-	-- print("received")
-	-- print(ip)
-	-- print(data)
--- end)
 
--- local t = udp.list()
--- print("Active UDP Sockets:")
--- for k, v in pairs(t) do
-	-- print(k .. " : " .. tostring(v) .. " ")
--- end
+local sock = tcp.open(1337, false, function() end)
+print("Active Sockets: ")
+	for k,v in pairs(tcp.list()) do
+	print( k .. " : " .. tostring(v))
+end
+
+print("\nGetting Port:")
+print(sock:getPort())
+
+print("\nValid:")
+print(sock:isValid())
+
+print("\nClosing socket...")
+sock:close()
+
+print("\nValid:")
+print(sock:isValid())
+
+print("\nActive Sockets: ")
+	for k,v in pairs(tcp.list()) do
+	print( k .. " : " .. tostring(v))
+end
+
+
+print(sock)
+--include("intellicon_host/init.lua")
+
+
