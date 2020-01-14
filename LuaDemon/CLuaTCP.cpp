@@ -19,9 +19,13 @@
 	#define SOCKET_ERROR (-1)
 
 	typedef int SOCKET;
+
+
+	#define INVALID_SOCKET (-1)
 #endif
 
-#define CLUATCP_CLASSNAME "socket_tcp"
+#define CLUATCP_CLASSNAME_SOCKET "socket_tcp"
+#define CLUATCP_CLASSNAME_CONNECTION "connection_tcp"
 
 unsigned int CLuaTCP::_IDCounter = 0;
 
@@ -34,17 +38,14 @@ unsigned int CLuaTCP::_IDCounter = 0;
 		{
 			memset(buf, '\0', 4096); // clear the buffer
 
-			if (!_s->m_LuaOnData) continue; // no Lua function available
-
 			struct sockaddr_in client;
-			int slen = sizeof(client);
-
+			socklen_t slen = sizeof(client);
+	
 			// new connection incoming
 			SOCKET connector = accept((SOCKET)_s->m_Socket, (struct sockaddr *) &client, &slen);
 			if (connector != INVALID_SOCKET)
 			{
-				unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
-
+			#if _WIN32
 				unsigned long NonBlock = 1; // prevents blocking
 				if (ioctlsocket(connector, FIONBIO, &NonBlock) == SOCKET_ERROR)
 				{
@@ -52,36 +53,98 @@ unsigned int CLuaTCP::_IDCounter = 0;
 					if (closesocket(connector) == SOCKET_ERROR) PRINT_ERROR("ERROR: closesocket() failed with error code : %d\n", WSAGetLastError());
 					continue;
 				}
-
-				PRINT_DEBUG("Connection incoming from %d.%d.%d.%d\n", _IP[0], _IP[1], _IP[2], _IP[3]); // TODO: Do this properly; Endianess!!!
-				/*
-	#pragma region Call Lua function
-				if (_s->m_LuaReference != NULL)
+			#else
+				if (fcntl(connector, F_SETFL, fcntl(connector, F_GETFL) | O_NONBLOCK) == -1)
 				{
-					lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaReference); // push the referenced function on the stack and pcall it
+					PRINT_ERROR("ERROR: fcntl() O_NONBLOCK failed: %s\n\tTerminating Socket...\n", strerror(errno));
+					if (close(connector) == -1) PRINT_ERROR("ERROR: close() failed.\n");
+					continue;
+				}
+			#endif
 
-					lua_pushinteger(CLuaEnvironment::_LuaState, client.sin_addr.s_addr);
+				// generates a ongoing id for reference in lua
+				if (_IDCounter == 0)
+					_IDCounter = (unsigned int)((rand() % 3000) + 3000); // dont start off at 0
+				else
+					_IDCounter++; // shares its IDs with TCPSocket
 
-					if (lua_pcall(CLuaEnvironment::_LuaState, 1, 1, 0)) // Some error occured
+				TCPConnection * newcon = new TCPConnection(connector, _IDCounter);
+				newcon->m_LocalPort = _s->m_IPPort;
+				newcon->m_RemotePort = client.sin_port; // is this useful?
+
+				// TODO: Do this properly; Endianess!!!
+				unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
+				sprintf(newcon->m_IPString, "%d.%d.%d.%d", _IP[0], _IP[1], _IP[2], _IP[3]);
+
+				PRINT_DEBUG("Connection incoming from %s\n", newcon->m_IPString);
+
+				// TODO: Call LuaOnConnection if available
+
+				_s->m_Connections.push_front(newcon);
+			}
+
+			// check connections for data
+			for (auto i = _s->m_Connections.begin(); i != _s->m_Connections.end(); i++) {
+				TCPConnection * _con = *i; // this is the socket
+
+				struct sockaddr_in client;
+			
+			#if _WIN32
+				int clen = sizeof(client), recv_len = 0;
+				if ((recv_len = recvfrom((SOCKET)_con->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &clen)) == SOCKET_ERROR)
+				{
+					int _err = WSAGetLastError();
+					if (_err == 10035) continue;
+					PRINT_ERROR("ERROR: recvfrom() failed with error code : %d\n", _err);
+				}
+			#else
+				size_t clen = sizeof(client), recv_len = 0;
+				if ((recv_len = recvfrom(_con->m_Socket, buf, 4096, 0, (struct sockaddr *) &client, &clen)) == -1)
+				{
+					if (errno == EWOULDBLOCK) continue;
+					PRINT_ERROR("ERROR: recvfrom() failed: %s\n", strerror(errno));
+				}
+			#endif
+				else // we received actual data
+				{
+					// connection closed by remote host
+					if (recv_len == 0)
+					{
+						// TODO: VERFIY AND DEBUG THIS SCOPE
+						PRINT_DEBUG("Removed closed socket on %i\n", _s->m_IPPort);
+					
+					#if _WIN32
+						closesocket(_con->m_Socket);
+					#else
+						close(_con->m_Socket);
+					#endif
+
+						delete _con;
+
+						i = _s->m_Connections.erase(i); // remove the socket from the list
+						if (i == _s->m_Connections.end()) break;
+
+						continue;
+					}
+
+					if (!_s->m_LuaOnData) continue;
+
+					// call lua function to accept the data
+					lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaOnData); // push the referenced function on the stack and pcall it
+					lua_pushlstring(CLuaEnvironment::_LuaState, (const char *)&buf, recv_len);
+					lua_pushstring(CLuaEnvironment::_LuaState, _con->m_IPString);
+
+					// NOTE: Add tcpconnection on first connection?
+
+					if (lua_pcall(CLuaEnvironment::_LuaState, 2, 0, 0)) // Some error occured
 					{
 						PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
 						lua_pop(CLuaEnvironment::_LuaState, 1);
 					}
-
-					bool a = (bool)lua_toboolean(CLuaEnvironment::_LuaState, 1);
 				}
-				//closesocket(connector);
-	#pragma endregion
-				*/
-
-				// simply accept all connections right now
-				//CLuaNetClient * _clientsock = new CLuaNetClient(connector);
-				//_clientsock->m_RemoteIP = client.sin_addr.s_addr;
-				//_s->m_Clients.push_front(_clientsock); // add it to the list
-				//PRINT_DEBUG("Active connections on Port %i:   %i#\n", _s->m_IPPort, _s->m_Clients.size());
-				
-				_s->m_Connections.push_front(connector);
 			}
+
+
 
 		}
 	}
@@ -101,7 +164,7 @@ unsigned int CLuaTCP::_IDCounter = 0;
 
 		lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaTCP::Lua_getSocket);
 		lua_setfield(CLuaEnvironment::_LuaState, -2, "getSocket");
-
+		
 		lua_setglobal(CLuaEnvironment::_LuaState, "tcp");
 	}
 
@@ -110,11 +173,14 @@ unsigned int CLuaTCP::_IDCounter = 0;
 	}
 #pragma endregion
 
+
+
 #pragma region Lua Metatable Functions
+
 /*
-	used by makeLuaObj
+	used in lua by tostring()
 */
-int CLuaTCP::__tostring(lua_State * State)
+int CLuaTCP::__tostring_socket(lua_State * State)
 {
 	lua_getfield(State, -1, "socketid"); // looks for the table key and pushes the value on the stack
 	
@@ -124,21 +190,42 @@ int CLuaTCP::__tostring(lua_State * State)
 	
 	char _buff[32];
 	if (_sock == nullptr) {
-		sprintf(_buff, "%s[%i][INV]", CLUATCP_CLASSNAME, _id);
+		sprintf(_buff, "%s[%i][INV]", CLUATCP_CLASSNAME_SOCKET, _id);
 	} else {
-		sprintf(_buff, "%s[%i]", CLUATCP_CLASSNAME, _id);
+		sprintf(_buff, "%s[%i]", CLUATCP_CLASSNAME_SOCKET, _id);
 	}
 
 	lua_pushstring(State, _buff);
 	return 1;
 }
 
+int CLuaTCP::__tostring_connection(lua_State * State)
+{
+	lua_getfield(State, -1, "connectionid"); // looks for the table key and pushes the value on the stack
+
+	unsigned int _id = (int)lua_tointeger(State, -1);
+
+	TCPConnection * _con = getConnectionFromID(_id);
+
+	char _buff[32];
+	if (_con == nullptr) {
+		sprintf(_buff, "%s[%i][INV]", CLUATCP_CLASSNAME_CONNECTION, _id);
+	}
+	else {
+		sprintf(_buff, "%s[%i]", CLUATCP_CLASSNAME_CONNECTION, _id);
+	}
+
+	lua_pushstring(State, _buff);
+	return 1;
+}
+
+
 /*
 	prevents accidental access
 */
 int CLuaTCP::__newindex(lua_State * State)
 {
-	PRINT_DEBUG("Attempted to write protected table! [%s] \n", CLUATCP_CLASSNAME);
+	PRINT_DEBUG("Attempted to write protected table! [%s] \n", CLUATCP_CLASSNAME_SOCKET);
 	return 0;
 }
 
@@ -147,11 +234,15 @@ int CLuaTCP::__newindex(lua_State * State)
 */
 int CLuaTCP::__metatable(lua_State * State)
 {
-	PRINT_DEBUG("Attempted to accesss metatable! [%s] \n", CLUATCP_CLASSNAME);
+	PRINT_DEBUG("Attempted to accesss metatable! [%s] \n", CLUATCP_CLASSNAME_SOCKET);
 	return 0;
 }
 
 #pragma endregion
+
+
+
+#pragma region Helper functions
 
 /*
 	Turns an TCPSocket into a Lua "object"
@@ -159,7 +250,7 @@ int CLuaTCP::__metatable(lua_State * State)
 	TODO: Currently every object gets its own metatable!
 			This means functions like __eq wont work!
 */
-void CLuaTCP::makeLuaObj(TCPSocket * Socket)
+void CLuaTCP::TCPSocket::makeLuaObj(TCPSocket * Socket)
 {
 	lua_State * State = CLuaEnvironment::_LuaState;
 
@@ -169,19 +260,22 @@ void CLuaTCP::makeLuaObj(TCPSocket * Socket)
 	lua_setfield(State, -2, "socketid");
 
 	// object functions
-	lua_pushcfunction(State, Lua_obj_close);
+	lua_pushcfunction(State, Lua_socket_close);
 	lua_setfield(State, -2, "close");
 
-	lua_pushcfunction(State, Lua_obj_getPort);
+	lua_pushcfunction(State, Lua_socket_getPort);
 	lua_setfield(State, -2, "getPort");
 
-	lua_pushcfunction(State, Lua_obj_isValid);
+	lua_pushcfunction(State, Lua_socket_isValid);
 	lua_setfield(State, -2, "isValid");
+
+	lua_pushcfunction(State, Lua_socket_list);
+	lua_setfield(State, -2, "list");
 
 	// Metatable
 	lua_newtable(State);
 
-		lua_pushcfunction(State, __tostring);
+		lua_pushcfunction(State, __tostring_socket);
 		lua_setfield(State, -2, "__tostring");
 
 		lua_pushcfunction(State, __newindex);
@@ -190,7 +284,47 @@ void CLuaTCP::makeLuaObj(TCPSocket * Socket)
 		lua_pushcfunction(State, __metatable);
 		lua_setfield(State, -2, "__metatable");
 
-		lua_pushstring(State, CLUATCP_CLASSNAME);
+		lua_pushstring(State, CLUATCP_CLASSNAME_SOCKET);
+		lua_setfield(State, -2, "__type");
+
+	lua_setmetatable(State, -2);
+}
+
+/*
+	Same as above, just for TCPConnection
+*/
+void CLuaTCP::TCPConnection::makeLuaObj(TCPConnection * Socket)
+{
+	lua_State * State = CLuaEnvironment::_LuaState;
+
+	lua_newtable(State);
+
+	lua_pushnumber(State, Socket->m_ID);
+	lua_setfield(State, -2, "connectionid");
+
+	// object functions
+	lua_pushcfunction(State, Lua_socket_close);
+	lua_setfield(State, -2, "close");
+
+	lua_pushcfunction(State, Lua_socket_getPort);
+	lua_setfield(State, -2, "getPort");
+
+	lua_pushcfunction(State, Lua_socket_isValid);
+	lua_setfield(State, -2, "isValid");
+
+	// Metatable
+	lua_newtable(State);
+
+		lua_pushcfunction(State, __tostring_connection);
+		lua_setfield(State, -2, "__tostring");
+
+		lua_pushcfunction(State, __newindex);
+		lua_setfield(State, -2, "__newindex");
+
+		lua_pushcfunction(State, __metatable);
+		lua_setfield(State, -2, "__metatable");
+
+		lua_pushstring(State, CLUATCP_CLASSNAME_CONNECTION);
 		lua_setfield(State, -2, "__type");
 
 	lua_setmetatable(State, -2);
@@ -215,16 +349,18 @@ void CLuaTCP::closeTCPSocket(short _port)
 			int count = 0;
 #if _WIN32
 			closesocket(_s->m_Socket);
-			for each (SOCKET s in _s->m_Connections)
+			for (TCPConnection * c : _s->m_Connections)
 			{
-				closesocket(s);
+				closesocket(c->m_Socket);
+				delete c;
 				count++;
 			}
 #else
 			close(_s->m_Socket);
-			for each (SOCKET s in _s->m_Connections)
+			for (TCPConnection * c : _s->m_Connections)
 			{
-				close(s);
+				close(c->m_Socket);
+				delete c;
 				count++;
 			}
 #endif
@@ -239,15 +375,49 @@ void CLuaTCP::closeTCPSocket(short _port)
 	}
 }
 
+/*
+	Various functions to find a socket/connection obj using its ID
+*/
 CLuaTCP::TCPSocket * CLuaTCP::getSocketFromID(unsigned int SocketID)
 {
-	for each (TCPSocket * _s in CLuaTCP::m_TCPSockets)
+	for (TCPSocket * _s : CLuaTCP::m_TCPSockets)
 	{
 		if (_s->m_ID == SocketID) return _s;
 	}
 
 	return nullptr;
 }
+
+CLuaTCP::TCPConnection * CLuaTCP::getConnectionFromID(unsigned int ConnectionID)
+{
+	// TODO: Theres gotta be a way than a 2D loop
+	for (TCPSocket * _s : CLuaTCP::m_TCPSockets)
+	{
+		for (TCPConnection * _c : _s->m_Connections)
+		{
+			if (_c->m_ID == ConnectionID) return _c;
+		}
+	}
+
+	return nullptr;
+}
+
+// not a static function!
+CLuaTCP::TCPConnection * CLuaTCP::TCPSocket::getConnectionFromID(unsigned int ConnectionID)
+{
+	for (TCPConnection * _con : this->m_Connections)
+	{
+		if (_con->m_ID == ConnectionID) return _con;
+	}
+
+	return nullptr;
+}
+
+#pragma endregion
+
+// Lua Functions
+
+#pragma region Lua Class Functions
 
 /*
 Lua param:
@@ -266,38 +436,11 @@ int CLuaTCP::Lua_list(lua_State * State)
 	{
 		lua_pushnumber(State, ++c);
 
-		makeLuaObj(_s); // this pushes a lua table on the stack
+		TCPSocket::makeLuaObj(_s); // this pushes a lua table on the stack
 
 		// push this table into the list
 		lua_settable(State, -3);
 	}
-
-	return 1;
-}
-
-/*
-Lua param:
-	int SocketID
-
-	Returns a socket object from ID (as integer)
-
-	Useful if you lost your object, idiot.
-
-	socket_tcp[] = tcp.getSocket(id)
-*/
-int CLuaTCP::Lua_getSocket(lua_State * State)
-{
-	unsigned int _id = lua_tointeger(State, 1);
-
-	TCPSocket * _s = getSocketFromID(_id);
-
-	if (_s == nullptr)
-	{
-		PRINT_DEBUG("CLuaTCP: No socket found for %i\n", _id);
-		return 0;
-	}
-
-	makeLuaObj(_s);
 
 	return 1;
 }
@@ -313,11 +456,10 @@ Lua param:
 	Opens a receiving socket
 	Callback: Called when a packet is received
 
-	nil = tcp.open(port, reuse_on_reload, callback(data, ip))
+	nil = tcp.open(port, reuse_on_reload, callback(string data, int ip))
 */
 int CLuaTCP::Lua_open(lua_State * State)
 {
-
 #if _WIN32
 	if (!CWSAHandler::initWSA()) return 0;
 #endif
@@ -344,7 +486,7 @@ int CLuaTCP::Lua_open(lua_State * State)
 				// function has to be last argument or this will create a wrong reference
 				_s->m_LuaOnData = luaL_ref(State, LUA_REGISTRYINDEX);
 
-				makeLuaObj(_s);
+				TCPSocket::makeLuaObj(_s);
 				return 1;
 			}
 		}
@@ -388,7 +530,6 @@ int CLuaTCP::Lua_open(lua_State * State)
 		return 0;
 	}
 #else
-
 	// prevent blocking
 	if (fcntl(s, F_SETFL, fcntl(s, F_GETFL) | O_NONBLOCK) == -1)
 	{
@@ -434,7 +575,7 @@ int CLuaTCP::Lua_open(lua_State * State)
 
 	CLuaTCP::m_TCPSockets.push_front(_luasock); // add the socket to the list
 
-	makeLuaObj(_luasock);
+	TCPSocket::makeLuaObj(_luasock);
 	return 1;
 }
 
@@ -458,12 +599,12 @@ int CLuaTCP::Lua_close(lua_State * State)
 
 	if (lua_isnumber(State, 1))
 	{
-		_port = lua_tonumber(State, 1);
+		_port = (short)lua_tonumber(State, 1);
 	}
 	else if (lua_istable(State, 1))
 	{
 		lua_getfield(State, -1, "port"); // looks for the table key and pushes the value on the stack
-		_port = lua_tonumber(State, -1);
+		_port = (short)lua_tonumber(State, -1);
 	}
 	else return 0; // invalid argument
 
@@ -472,14 +613,45 @@ int CLuaTCP::Lua_close(lua_State * State)
 	return 0;
 }
 
+/*
+Lua param:
+	int SocketID
 
-// lua object functions
+	Returns a socket object from ID (as integer)
+
+	Useful if you lost your object, idiot.
+
+	socket_tcp[] = tcp.getSocket(id)
+*/
+int CLuaTCP::Lua_getSocket(lua_State * State)
+{
+	unsigned int _id = lua_tointeger(State, 1);
+
+	TCPSocket * _s = getSocketFromID(_id);
+
+	if (_s == nullptr)
+	{
+		PRINT_DEBUG("CLuaTCP: No socket found for %i\n", _id);
+		return 0;
+	}
+
+	TCPSocket::makeLuaObj(_s);
+
+	return 1;
+}
+
+#pragma endregion
+
+
+
+#pragma region Lua TCPSocket Object functions
+
 /*
 	Checks if the socket is still valid
 
 	socket:isValid()
 */
-int CLuaTCP::Lua_obj_isValid(lua_State * State)
+int CLuaTCP::Lua_socket_isValid(lua_State * State)
 {
 	lua_getfield(State, -1, "socketid");
 
@@ -497,7 +669,7 @@ int CLuaTCP::Lua_obj_isValid(lua_State * State)
 
 	socket:close()
 */
-int CLuaTCP::Lua_obj_close(lua_State * State)
+int CLuaTCP::Lua_socket_close(lua_State * State)
 {
 	lua_getfield(State, -1, "socketid");
 
@@ -516,7 +688,7 @@ int CLuaTCP::Lua_obj_close(lua_State * State)
 
 	socket:getPort()
 */
-int CLuaTCP::Lua_obj_getPort(lua_State * State)
+int CLuaTCP::Lua_socket_getPort(lua_State * State)
 {
 	lua_getfield(State, -1, "socketid");
 
@@ -529,3 +701,35 @@ int CLuaTCP::Lua_obj_getPort(lua_State * State)
 
 	return 1;
 }
+
+/*
+	Returns all active connections on that socket.
+
+	local list = socket:list()
+*/
+int CLuaTCP::Lua_socket_list(lua_State * State)
+{
+	lua_getfield(State, -1, "socketid");
+
+	unsigned int _id = (int)lua_tointeger(State, -1);
+
+	TCPSocket * _sock = getSocketFromID(_id);
+	if (_sock == nullptr) return 0;
+	
+	lua_newtable(State); // the 'list' to return
+
+	int c = 0;
+	for (TCPConnection * _c : _sock->m_Connections)
+	{
+		lua_pushnumber(State, ++c);
+
+		TCPConnection::makeLuaObj(_c); // this pushes a lua table on the stack
+
+		// push this table into the list
+		lua_settable(State, -3);
+	}
+
+	return 1;
+}
+
+#pragma endregion

@@ -1,11 +1,11 @@
 
-_TESTCYCLE = _TESTCYCLE or 0
-_TESTCYCLE = _TESTCYCLE + 1
+do -- Startup Crap
+_G._TESTCYCLE = _G._TESTCYCLE or 0
+_G._TESTCYCLE = _G._TESTCYCLE + 1
 
 print("Run # " .. _TESTCYCLE)
 print("Root: " .. _LUAENV.ENVDIR)
 print("Arch: " .. _LUAENV.ENVSYS)
-
 print("\n")
 
 -- This overloads the default type() function
@@ -20,37 +20,31 @@ if not _G.__oldtype then -- just check if its already overloaded
 	end
 end
 
-
-
---local sock = tcp.open(1337, false, function(data) end)
-
-
-
-local sock = tcp.open(1337, false, function() end)
-print("Active Sockets: ")
-	for k,v in pairs(tcp.list()) do
-	print( k .. " : " .. tostring(v))
 end
 
-print("\nGetting Port:")
-print(sock:getPort())
 
-print("\nValid:")
-print(sock:isValid())
 
-print("\nClosing socket...")
-sock:close()
+_G.sock = tcp.open(1337, false, function(data, ip)
+	print("DATA! From: " .. ip)
+	print("\nData: " .. data)
+	
+	print(sock:list())
+	
+	for k,v in pairs(sock:list()) do print(v) end
+	
+end)
 
-print("\nValid:")
-print(sock:isValid())
-
-print("\nActive Sockets: ")
-	for k,v in pairs(tcp.list()) do
-	print( k .. " : " .. tostring(v))
+if sock and sock:isValid() then
+	print("TCP Socket on Port: " .. sock:getPort() .. " is ready\n")
+else
+	print("Failed to open socket!\n")
 end
+
+
 
 
 print(sock)
 --include("intellicon_host/init.lua")
+
 
 

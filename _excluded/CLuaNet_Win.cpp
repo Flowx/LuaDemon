@@ -406,12 +406,10 @@ void CLuaNet::PollFunctions()
 				memset(__buff, 0, 0xFF);
 				recvfrom(s, __buff, _avail, 0, 0, 0);
 
-
 				//sockaddr_in SenderAddr;
 				//int SenderAddrSize = sizeof(SenderAddr);
 				//recvfrom(s, __buff, 0xFF, 0, (SOCKADDR *)& SenderAddr, &SenderAddrSize); // this will ALWAYS return -1 because of WSA_WOULDBLOCK
 				//if (WSAGetLastError() != WSAEWOULDBLOCK) PRINT_ERROR("ERROR: recvfrom failed with error: #%d\n", WSAGetLastError());
-
 
 				continue;
 			}
