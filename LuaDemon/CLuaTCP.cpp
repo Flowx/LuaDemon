@@ -34,7 +34,7 @@ unsigned int CLuaTCP::_IDCounter = 0;
 	{
 		char buf[4096]; // 4kB receive buffer
 
-		for (auto _s : CLuaTCP::m_TCPSockets)
+		for (TCPSocket * _s : CLuaTCP::m_TCPSockets)
 		{
 			memset(buf, '\0', 4096); // clear the buffer
 
@@ -71,7 +71,8 @@ unsigned int CLuaTCP::_IDCounter = 0;
 				TCPConnection * newcon = new TCPConnection(connector, _IDCounter);
 				newcon->m_LocalPort = _s->m_IPPort;
 				newcon->m_RemotePort = client.sin_port; // is this useful?
-
+				newcon->m_ParentID = _s->m_ID;
+				
 				// TODO: Do this properly; Endianess!!!
 				unsigned char * _IP = (unsigned char *)&client.sin_addr.s_addr;
 				sprintf(newcon->m_IPString, "%d.%d.%d.%d", _IP[0], _IP[1], _IP[2], _IP[3]);
@@ -172,7 +173,6 @@ unsigned int CLuaTCP::_IDCounter = 0;
 	{
 	}
 #pragma endregion
-
 
 
 #pragma region Lua Metatable Functions
@@ -302,15 +302,19 @@ void CLuaTCP::TCPConnection::makeLuaObj(TCPConnection * Socket)
 	lua_pushnumber(State, Socket->m_ID);
 	lua_setfield(State, -2, "connectionid");
 
+	// Note! Dont use this for critical stuff as this may be fucked with in lua
+	//lua_pushnumber(State, Socket->m_ParentID); 
+	//lua_setfield(State, -2, "parentsocketid"); // NOTE: Make sure the ID's match
+
 	// object functions
-	lua_pushcfunction(State, Lua_socket_close);
+	lua_pushcfunction(State, Lua_connection_close);
 	lua_setfield(State, -2, "close");
 
-	lua_pushcfunction(State, Lua_socket_getPort);
-	lua_setfield(State, -2, "getPort");
-
-	lua_pushcfunction(State, Lua_socket_isValid);
+	lua_pushcfunction(State, Lua_connection_isValid);
 	lua_setfield(State, -2, "isValid");
+
+	lua_pushcfunction(State, Lua_connection_send);
+	lua_setfield(State, -2, "send");
 
 	// Metatable
 	lua_newtable(State);
@@ -346,6 +350,8 @@ void CLuaTCP::closeTCPSocket(short _port)
 		{
 			luaL_unref(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _s->m_LuaOnData); // remove the lua hook
 
+
+			// cose all connections
 			int count = 0;
 #if _WIN32
 			closesocket(_s->m_Socket);
@@ -366,12 +372,45 @@ void CLuaTCP::closeTCPSocket(short _port)
 #endif
 			if (count > 0) PRINT_DEBUG("CLuaTCP: Closed %i connections on port %i\n", count, _s->m_IPPort);
 
-			// TODO: delete the lua table
-
 			delete _s;
 			i = CLuaTCP::m_TCPSockets.erase(i); // remove the socket from the list
 			break;
 		}
+	}
+}
+
+/*
+	shortcut function
+
+	closes a TCP connection from a TCPSocket
+*/
+void CLuaTCP::closeTCPConnection(unsigned int ID, TCPSocket * Parent = nullptr)
+{
+	TCPSocket * _sock = nullptr;
+	
+	if (Parent != nullptr) {
+		_sock = Parent;
+	} else { // no socket provided, lets go find it first
+		TCPConnection * _con = getConnectionFromID(ID);
+		_sock = getSocketFromID(_con->m_ParentID);
+	}
+	
+	if (_sock == nullptr) return; // no socket found
+
+	for (auto i = _sock->m_Connections.begin(); i != _sock->m_Connections.end(); i++) {
+		TCPConnection * _con = *i;
+
+		if (_con->m_ID != ID) continue;
+
+	#if _WIN32
+		closesocket(_con->m_Socket);
+	#else
+		close(_con->m_Socket);
+	#endif
+		delete _con;
+
+		i = _sock->m_Connections.erase(i); // remove the socket from the list
+		if (i == _sock->m_Connections.end()) break;
 	}
 }
 
@@ -456,7 +495,7 @@ Lua param:
 	Opens a receiving socket
 	Callback: Called when a packet is received
 
-	nil = tcp.open(port, reuse_on_reload, callback(string data, int ip))
+	nil = tcp.open(short port, reuse_on_reload, callback(string data, int ip))
 */
 int CLuaTCP::Lua_open(lua_State * State)
 {
@@ -653,7 +692,7 @@ int CLuaTCP::Lua_getSocket(lua_State * State)
 */
 int CLuaTCP::Lua_socket_isValid(lua_State * State)
 {
-	lua_getfield(State, -1, "socketid");
+	lua_getfield(State, 1, "socketid");
 
 	unsigned int _id = (int)lua_tointeger(State, -1);
 
@@ -671,7 +710,7 @@ int CLuaTCP::Lua_socket_isValid(lua_State * State)
 */
 int CLuaTCP::Lua_socket_close(lua_State * State)
 {
-	lua_getfield(State, -1, "socketid");
+	lua_getfield(State, 1, "socketid");
 
 	unsigned int _id = (int)lua_tointeger(State, -1);
 
@@ -690,7 +729,7 @@ int CLuaTCP::Lua_socket_close(lua_State * State)
 */
 int CLuaTCP::Lua_socket_getPort(lua_State * State)
 {
-	lua_getfield(State, -1, "socketid");
+	lua_getfield(State, 1, "socketid");
 
 	unsigned int _id = (int)lua_tointeger(State, -1);
 
@@ -709,7 +748,7 @@ int CLuaTCP::Lua_socket_getPort(lua_State * State)
 */
 int CLuaTCP::Lua_socket_list(lua_State * State)
 {
-	lua_getfield(State, -1, "socketid");
+	lua_getfield(State, 1, "socketid");
 
 	unsigned int _id = (int)lua_tointeger(State, -1);
 
@@ -730,6 +769,81 @@ int CLuaTCP::Lua_socket_list(lua_State * State)
 	}
 
 	return 1;
+}
+
+#pragma endregion
+
+
+#pragma region Lua TCPConnection Object functions
+
+/*
+	Checks if the connection is still valid ("open")
+
+	connection:isValid()
+*/
+int CLuaTCP::Lua_connection_isValid(lua_State * State)
+{
+	lua_getfield(State, 1, "connectionid");
+	unsigned int _id = (int)lua_tointeger(State, -1);
+
+	TCPConnection * _con = getConnectionFromID(_id);
+
+	lua_pushboolean(State, (_con != nullptr));
+
+	return 1;
+}
+
+/*
+	Closes a TCP connection
+
+	connection:close()
+*/
+int CLuaTCP::Lua_connection_close(lua_State * State)
+{
+	lua_getfield(State, 1, "connectionid");
+	unsigned int _id = (int)lua_tointeger(State, -1);
+
+	TCPConnection * _con = getConnectionFromID(_id);
+	if (_con == nullptr) return 0;
+
+	closeTCPConnection(_con->m_ID);
+
+	return 0;
+}
+
+/*
+	Sends data over a connection
+
+	connection:send(string data)
+*/
+int CLuaTCP::Lua_connection_send(lua_State * State)
+{
+	lua_getfield(State, 1, "connectionid");
+	unsigned int _id = (int)lua_tointeger(State, -1);
+
+	TCPConnection * _con = getConnectionFromID(_id);
+	if (_con == nullptr) return 0;
+
+	const char * data = lua_tostring(State, -2);
+	size_t len = lua_strlen(State, -2);
+
+	_con->m_Socket;
+
+	/*
+		SEND DATA HERE
+	*/
+
+	int _sl = send(_con->m_Socket, data, len, 0);
+
+	if(_sl != len) { // something went wrong
+#if _WIN32
+		PRINT_ERROR("ERROR: send() failed with error code : %d\n", WSAGetLastError());
+#else
+		PRINT_ERROR("ERROR: send() failed with error code : %d\n", strerror(errno));
+#endif
+	}
+
+	return 0;
 }
 
 #pragma endregion

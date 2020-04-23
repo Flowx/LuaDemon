@@ -33,6 +33,9 @@
     <Filter Include="Lua Libraries\Network\TCP">
       <UniqueIdentifier>{1036369a-dda8-466e-af21-e44fb5853814}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Lua Libraries\Think">
+      <UniqueIdentifier>{7cbfc9f9-81e5-48f2-99ce-d4db2236fc71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="CLuaTCP.cpp">
       <Filter>Lua Libraries\Network\TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="CluaThink.cpp">
+      <Filter>Lua Libraries\Think</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="CLuaTCP.h">
       <Filter>Lua Libraries\Network\TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="CLuaThink.h">
+      <Filter>Lua Libraries\Think</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

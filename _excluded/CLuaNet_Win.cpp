@@ -215,7 +215,7 @@ int CLuaNet::Lua_openTCPSocket(lua_State * State)
 			delete _s;
 
 			i = CLuaNet::m_TCPSockets.erase(i);
-			if (i !=  CLuaNet::m_TCPSockets.end()) i++; else break;
+			if (i !=  CLuaNet::m_TCPSockets.end()) i++; else break; // WARNING: Is this working properly? Debug!!
 		}
 	}
 

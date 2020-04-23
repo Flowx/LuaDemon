@@ -25,9 +25,10 @@ public:
 		unsigned short  m_RemotePort = 0;	// port of local socket 
 		unsigned int	m_Socket;			// Socket reference; Local/Server Socket!!
 		unsigned int	m_ID;				// duh
+		unsigned int	m_ParentID;			// ID of parent socket (if applicable)
 				 char	m_IPString[16];		// IP as string
-				 char	m_Identifier[64];	// 64 char string, can be used by lua to uniquely identify this. Persistent over reloads
 				 int	m_LuaOnData;
+				 //char	m_Identifier[64];	// 64 char string, can be used by lua to uniquely identify this. Persistent over reloads
 		
 		static void makeLuaObj(TCPConnection * Socket);
 	};
@@ -60,11 +61,11 @@ private:
 	static int __metatable(lua_State * Stat);
 
 	static void closeTCPSocket(short Port);
+	static void closeTCPConnection(unsigned int ID, TCPSocket * Parent);
 	static TCPSocket * getSocketFromID(unsigned int SocketID);
 	static TCPConnection * getConnectionFromID(unsigned int ConnectionID); // expensive/slow function!
 
 	static inline std::list<TCPSocket *> m_TCPSockets;
-	//static inline std::list<TCPConnection *> m_TCPConnections;
 
 public:
 	static void PushFunctions();
@@ -82,5 +83,10 @@ public:
 	static int Lua_socket_close(lua_State * State);
 	static int Lua_socket_getPort(lua_State * State);
 	static int Lua_socket_list(lua_State * State);
+
+	// used by the pseudo-object
+	static int Lua_connection_isValid(lua_State * State);
+	static int Lua_connection_close(lua_State * State);
+	static int Lua_connection_send(lua_State * State);
 };
 

@@ -23,27 +23,50 @@ end
 end
 
 
-
-_G.sock = tcp.open(1337, false, function(data, ip)
-	print("DATA! From: " .. ip)
-	print("\nData: " .. data)
-	
-	print(sock:list())
-	
-	for k,v in pairs(sock:list()) do print(v) end
-	
+think.add("mytest", 500, function()
+	print("tick!\n")
 end)
 
-if sock and sock:isValid() then
-	print("TCP Socket on Port: " .. sock:getPort() .. " is ready\n")
-else
-	print("Failed to open socket!\n")
+think.remove("mytest")
+
+
+
+local t = think.list()
+
+for k,v in pairs(t) do
+	print( v.identifier .. " : " .. v.interval .. "ms\n")
 end
 
 
+-- _G.sock = tcp.open(1337, false, function(data, ip)
+	-- print("DATA! From: " .. ip)
+	-- print("\nData: " .. data)
+	
+	-- print(sock:list())
+	
+	-- for k,v in pairs(sock:list()) do 
+		-- print(v)
+		
+		-- v:send("aaa\\aaa\0aiaiushbd")
+		
+		-- print("\nValid: " .. tostring(v:isValid()))
+		-- print("\nStill valid: " .. tostring(v:isValid("lellelele")))
+	-- end
+	
+	
+	
+-- end)
+
+-- if sock and sock:isValid() then
+	-- print("TCP Socket on Port: " .. sock:getPort() .. " is ready\n")
+-- else
+	-- print("Failed to open socket!\n")
+-- end
 
 
-print(sock)
+
+
+--print(sock)
 --include("intellicon_host/init.lua")
 
 

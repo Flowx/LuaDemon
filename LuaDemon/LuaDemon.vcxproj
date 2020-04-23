@@ -198,6 +198,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlatformCompatibility.cpp" />
     <ClCompile Include="LibraryLinks.cpp" />
+    <ClCompile Include="CluaThink.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLuaEnvironment.h" />
@@ -208,6 +209,7 @@
     <ClInclude Include="CLuaTCP.h" />
     <ClInclude Include="CLuaUDP.h" />
     <ClInclude Include="CWSAHandler.h" />
+    <ClInclude Include="CLuaThink.h" />
     <ClInclude Include="Lua\lauxlib.h" />
     <ClInclude Include="Lua\lua.h" />
     <ClInclude Include="Lua\lua.hpp" />

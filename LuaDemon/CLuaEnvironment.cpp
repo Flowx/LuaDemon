@@ -10,6 +10,32 @@ lua_State * CLuaEnvironment::_LuaState;
 std::thread CLuaEnvironment::_FileThread;
 #pragma endregion
 
+/*
+	Simple debug function that prints out the current Lua stack.
+*/
+void CLuaEnvironment::DumpLuaStack() {
+	lua_State * L = CLuaEnvironment::_LuaState;
+
+	int i = lua_gettop(L);
+	PRINT_DEBUG("\n---------------- Stack Dump ----------------\n");
+	while (i) {
+		int t = lua_type(L, i);
+		switch (t) {
+		case LUA_TSTRING:
+			PRINT_DEBUG("%d:'%s'\n", i, lua_tostring(L, i));
+			break;
+		case LUA_TBOOLEAN:
+			PRINT_DEBUG("%d: %s\n", i, lua_toboolean(L, i) ? "true" : "false");
+			break;
+		case LUA_TNUMBER:
+			PRINT_DEBUG("%d: %g\n", i, lua_tonumber(L, i));
+			break;
+		default: PRINT_DEBUG("%d: %s\n", i, lua_typename(L, t)); break;
+		}
+		i--;
+	}
+	PRINT_DEBUG("--------------- Stack Dump Finished ---------------\n");
+}
 
 /*
 	The _LUAENV global table contains some useful information about the system architecture, hardware and OS environment.

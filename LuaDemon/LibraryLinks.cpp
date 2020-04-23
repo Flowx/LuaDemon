@@ -4,6 +4,7 @@
 #include "CLuaFile.h"
 #include "CLuaUDP.h"
 #include "CLuaTCP.h"
+#include "CLuaThink.h"
 
 /*
 	Loads the statically written lua libraries
@@ -18,6 +19,7 @@ void CLuaEnvironment::PollLibraries() // called every cycle/tick
 	CLuaFile::PollFunctions();
 	CLuaUDP::PollFunctions();
 	CLuaTCP::PollFunctions();
+	CLuaThink::PollFunctions();
 }
 
 void CLuaEnvironment::PushLibraries() // called on intial startup
@@ -27,6 +29,7 @@ void CLuaEnvironment::PushLibraries() // called on intial startup
 	CLuaFile::PushFunctions();
 	CLuaUDP::PushFunctions();
 	CLuaTCP::PushFunctions();
+	CLuaThink::PushFunctions();
 }
 
 void CLuaEnvironment::LoadLibraries() // called when Lua reloads (file change)
@@ -36,4 +39,5 @@ void CLuaEnvironment::LoadLibraries() // called when Lua reloads (file change)
 	CLuaFile::LoadFunctions();
 	CLuaUDP::LoadFunctions();
 	CLuaTCP::LoadFunctions();
+	CLuaThink::LoadFunctions();
 }
