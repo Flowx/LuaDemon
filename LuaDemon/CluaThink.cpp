@@ -3,10 +3,30 @@
 #include "CLuaEnvironment.h"
 
 
+
+//using namespace std::chrono;
+
 #pragma region Lua linking
 void CLuaThink::PollFunctions()
 {
+	std::chrono::steady_clock::time_point _tp = std::chrono::steady_clock::now();
+	for each (CLuaThink::ThinkHook * _h in CLuaThink::m_Hooklist)
+	{
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(_tp - _h->m_Trigger).count() >= _h->m_Interval)
+		{
+			_h->m_Trigger = _tp; // reset the timer
 
+			lua_rawgeti(CLuaEnvironment::_LuaState, LUA_REGISTRYINDEX, _h->m_Luafunction); // push the referenced function on the stack and pcall it
+			
+			if (lua_pcall(CLuaEnvironment::_LuaState, 0, 0, 0)) // Some error occured
+			{
+				PRINT_ERROR("CALLBACK ERROR: %s\n", lua_tostring(CLuaEnvironment::_LuaState, -1));
+				lua_pop(CLuaEnvironment::_LuaState, 1);
+			}
+		}
+	}
+
+	// check all 
 }
 
 void CLuaThink::PushFunctions()

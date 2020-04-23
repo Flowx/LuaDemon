@@ -24,10 +24,11 @@ end
 
 
 think.add("mytest", 500, function()
-	print("tick!\n")
+	print("tick 5!\n")
 end)
 
-think.remove("mytest")
+
+
 
 
 

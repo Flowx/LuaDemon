@@ -1,7 +1,7 @@
 #pragma once
 #include "CLuaLib.h"
 #include "CLuaEnvironment.h"
-
+#include <chrono>
 
 
 /*
@@ -17,12 +17,14 @@ class CLuaThink : CLuaLib
 		const char* m_Identifier;
 		int m_Interval;
 		int m_Luafunction;
+		std::chrono::steady_clock::time_point m_Trigger;
 
 		ThinkHook(const char * Identifier, int Interval, int LuaCallback)
 		{
 			m_Identifier = Identifier;
 			m_Interval = Interval;
 			m_Luafunction = LuaCallback;
+			m_Trigger = std::chrono::steady_clock::now();
 		}
 	};
 

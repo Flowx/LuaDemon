@@ -87,7 +87,8 @@ void CLuaEnvironment::LoadLua()
 {
 	_Initialized = false;
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(10)); // reload doesnt work reliably without this for some reason
+	// TODO: does the delay depend on Lua load time?
+	std::this_thread::sleep_for(std::chrono::milliseconds(15)); // reload doesnt work reliably without this for some reason
 
 	std::string buffer = _Directory + LUAENV_INDEXFILE;
 
