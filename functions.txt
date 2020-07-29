@@ -1,0 +1,30 @@
+	
+
+nil = udp.open(port, reuse_on_reload, callback(data, ip))
+	short Port, bool Reuse, func Callback
+	Opens a receiving socket
+	Callback: Called when a packet is received
+	
+
+nil = udp.dump(address, port, data)	
+	string addr, short port, string data
+
+	Standalone function. Sends a string using UDP.
+	Opens its own socket and closes it afterwards.
+
+	Note: Usually very reliable unless you feed it stupid IP Addresses or Ports
+
+
+nil = udp.close(socket)
+nil = udp.close(port)
+	table UDPSocket
+		OR
+	short Port
+
+	Closes a socket
+
+
+table = udp.list()
+	Returns a table with all active Lua UDP Sockets
+
+	

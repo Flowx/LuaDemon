@@ -18,7 +18,7 @@ int main(int argc, const char ** args)
 	{
 		string targ = args[i];
 
-		if (targ == "-h" || targ == "--help")
+		if (targ == "-h" || targ == "-help" || targ == "--help")
 		{
 			PRINT_DEBUG("-dir <directory>\t = Sets the root directory for the Lua environment.\n\tDirectory must be readable by the process.\n\tDirectory must end with /\n\tDirectory must contain an \'%s\'.\n\n", LUAENV_INDEXFILE);
 			PRINT_DEBUG("-filespyinterval <interval>\t = Linux only. Interval is in milliseconds.\n\tAllows periodic checking of files by comparing last change.\n\tResource intensive - Use for debug only!\n\n");
