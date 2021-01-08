@@ -3,6 +3,12 @@
 #include "CLuaEnvironment.h"
 #include <string>
 
+#if _WIN32
+	#include <Windows.h>
+	#include <conio.h>
+#endif
+
+
 using namespace std;
 
 void CLuaStdLib::PushFunctions()
@@ -15,6 +21,9 @@ void CLuaStdLib::PushFunctions()
 	// forces the Lua environment to reload.
 	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaStdLib::Lua_forceReload);
 	lua_setglobal(CLuaEnvironment::_LuaState, "forceReload");
+
+	lua_pushcfunction(CLuaEnvironment::_LuaState, CLuaStdLib::Lua_setConsoleTitle);
+	lua_setglobal(CLuaEnvironment::_LuaState, "setConsoleTitle");
 }
 
 void CLuaStdLib::PollFunctions()
@@ -26,7 +35,11 @@ void CLuaStdLib::LoadFunctions()
 }
 
 
+/*
+	_G.include(string Filename)
 
+	Includes a Lua file and loads its.
+*/
 int CLuaStdLib::Lua_include(lua_State *LState) 
 {
 	string _file = lua_tostring(LState, 1);
@@ -71,6 +84,8 @@ int CLuaStdLib::Lua_include(lua_State *LState)
 }
 
 /*
+	_G.forceReload(nil)
+
 	forces the lua environment to reload
 */
 int CLuaStdLib::Lua_forceReload(lua_State *LState)
@@ -78,6 +93,32 @@ int CLuaStdLib::Lua_forceReload(lua_State *LState)
 	CLuaEnvironment::_FileChange = true;
 	return 0;
 }
+
+
+/*
+	Sets the console/window title (in desktop GUI)
+
+	May not work on all systems.
+
+	_G.setConsoleTitle(string Title)
+*/
+int CLuaStdLib::Lua_setConsoleTitle(lua_State* LState)
+{
+#if _WIN32 // windows.h should be included already
+
+	const char* str = lua_tostring(LState, 1);
+
+	if(str) SetConsoleTitle(str);
+
+#else
+	//TODO: implement this on linux
+	//prob never gonna do this as I use linux GUIs
+
+#endif
+
+	return 0;
+}
+
 
 
 //void CLuaStdLib::stackdump_g(lua_State* l)

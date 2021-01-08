@@ -28,3 +28,5 @@ think.add("tteses", 1000, function()
 	print("boop")
 	udp.dump("10.0.0.10", 13337, "aaaa")
 end)
+
+setConsoleTitle("PENIS")
