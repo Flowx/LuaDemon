@@ -112,7 +112,7 @@ int CLuaStdLib::Lua_setConsoleTitle(lua_State* LState)
 
 #else
 	//TODO: implement this on linux
-	//prob never gonna do this as I use linux GUIs
+	//prob never gonna do this as I dont use linux GUIs
 
 #endif
 
